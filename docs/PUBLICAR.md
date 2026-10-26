@@ -87,7 +87,8 @@ Isso é necessário para o login funcionar no site publicado.
 ## Atualizações daqui pra frente
 
 - Quando eu terminar uma fase nova, o código vai para o GitHub e a Vercel publica sozinha. Para acompanhar, veja a aba **Deployments** do projeto na Vercel.
-- O app no celular se atualiza sozinho. Se parecer desatualizado, feche e abra de novo.
+- Quando sair uma versão nova, o app mostra no topo **"Nova versão disponível · Atualizar"**. Toque nele.
+- Para atualizar a qualquer momento, **puxe a tela para baixo** (no topo da página) até a bolinha girar e solte. No chat também tem o botão **↻** no canto de cima.
 - **Mudou alguma variável na Vercel?** Ela só vale depois de publicar de novo: abra **Deployments**, clique nos **⋯** do mais recente e depois em **Redeploy**.
 
 ## Problemas comuns

@@ -39,7 +39,8 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const logado = Boolean(data?.claims?.sub);
   const { pathname } = request.nextUrl;
-  const rotaPublica = pathname.startsWith("/login") || pathname.startsWith("/auth");
+  const rotaPublica =
+    pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname === "/api/versao";
 
   if (!logado && !rotaPublica) {
     if (pathname.startsWith("/api/")) {

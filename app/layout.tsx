@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import AtualizarApp from "@/components/AtualizarApp";
 import RegistrarServiceWorker from "@/components/RegistrarServiceWorker";
+import { VERSAO } from "@/lib/versao";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <RegistrarServiceWorker />
+        <AtualizarApp versao={VERSAO} />
       </body>
     </html>
   );

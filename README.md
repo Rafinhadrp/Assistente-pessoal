@@ -88,6 +88,12 @@ Funciona como o ditado do app do Claude:
 - Funciona no **Chrome** (Android e PC), no **Edge** e no **Safari** (iPhone). No Firefox não funciona.
 - No iPhone, a **Siri** e o **Ditado** precisam estar ligados em Ajustes.
 
+### Atualizar o app
+
+- **Puxe a tela para baixo** (estando no topo da página) até a bolinha girar e solte, como no Chrome ou no Safari.
+- No chat também tem o botão **↻** no canto de cima.
+- Quando houver uma versão nova publicada, aparece no topo **"Nova versão disponível · Atualizar"**.
+
 Para testar o app "instalável" (PWA), rode a versão de produção:
 
 ```bash
