@@ -1,7 +1,7 @@
 # Assistente Pessoal
 
 App pessoal (PWA) para conversar com uma IA que guarda finanças e compromissos.
-Veja o `CLAUDE.md` para a visão completa do projeto. **Fase atual: 1 (MVP, chat por texto).**
+Veja o `CLAUDE.md` para a visão completa do projeto. **Fase atual: 2 (chat por texto e por voz).**
 
 > 📱 **Para publicar na internet (Vercel) e instalar no celular, siga [`docs/PUBLICAR.md`](docs/PUBLICAR.md).**
 > Os passos abaixo são para rodar no seu computador, para testes.
@@ -73,6 +73,15 @@ No chat, tente:
 - `Já fui no médico, pode marcar como feito`
 
 Depois confira as abas **Finanças** e **Agenda**.
+
+### Falar em vez de digitar (Fase 2)
+
+Toque no botão de **microfone** ao lado do campo, fale e faça uma pausa. O texto aparece enquanto você fala e é enviado sozinho quando você para.
+
+- Para enviar antes, toque no botão vermelho (■). Para desistir, toque em **Cancelar**.
+- Na primeira vez, o navegador pede permissão para usar o microfone: toque em **Permitir**.
+- Funciona no **Chrome** (Android e PC), no **Edge** e no **Safari** (iPhone). No Firefox não funciona.
+- No iPhone, a **Siri** e o **Ditado** precisam estar ligados em Ajustes. Se no app instalado o microfone não funcionar, teste pelo Safari normal e me avise.
 
 Para testar o app "instalável" (PWA), rode a versão de produção:
 
