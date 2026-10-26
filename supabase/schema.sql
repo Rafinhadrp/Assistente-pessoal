@@ -134,3 +134,10 @@ $$;
 
 revoke all on function public.finance_summary(date, date, text) from public, anon;
 grant execute on function public.finance_summary(date, date, text) to authenticated;
+
+-- =====================================================================
+-- Atualização (Fase 2.1): o histórico do chat passa a guardar o que o
+-- sistema realmente fez em cada resposta (ex: "compromisso criado").
+-- Assim a IA não acha que esqueceu de salvar e não cria duplicado.
+-- =====================================================================
+alter table public.messages add column if not exists actions text;

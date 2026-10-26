@@ -45,6 +45,11 @@ const lancamento = (tipo: "receita" | "gasto"): Anthropic.Beta.BetaTool["input_s
           ? "Categoria em minúsculas, sem acento (ex: mercado, transporte, saude, lazer, contas, moradia, outros)."
           : "Categoria em minúsculas, sem acento (ex: salario, extra, venda, outros).",
     },
+    confirmar_duplicado: {
+      type: "boolean",
+      description:
+        "Só use true se a ferramenta avisou que parecia duplicado E o usuário confirmou que é um lançamento novo.",
+    },
   },
   required: ["valor", "descricao"],
 });
@@ -89,7 +94,7 @@ export const ferramentas: Anthropic.Beta.BetaTool[] = [
   {
     name: "criar_compromisso",
     description:
-      "Cria um compromisso na agenda (consulta, reunião, evento). Se o usuário não disser o horário, pergunte antes de criar.",
+      "Cria um compromisso na agenda (consulta, reunião, evento). Se o usuário não disser o horário, pergunte antes de criar. Se já existir um compromisso igual no mesmo horário, a ferramenta não cria outro e devolve o que já existe.",
     input_schema: {
       type: "object",
       properties: {
@@ -134,7 +139,7 @@ export const ferramentas: Anthropic.Beta.BetaTool[] = [
   {
     name: "atualizar_compromisso",
     description:
-      "Atualiza um compromisso existente: marcar como feito, arquivar, voltar para pendente, mudar notas ou remarcar a data/hora. Precisa do id (pegue com listar_compromissos).",
+      "Atualiza um compromisso existente: marcar como feito, arquivar (também serve para tirar um compromisso duplicado ou criado por engano da agenda), voltar para pendente, mudar notas ou remarcar a data/hora. Precisa do id (pegue com listar_compromissos).",
     input_schema: {
       type: "object",
       properties: {
@@ -163,6 +168,20 @@ const categoriaLivre = (v: unknown) =>
     .replace(/[̀-ͯ]/g, "") || "outros";
 const umDe = <T extends string>(lista: readonly T[], v: unknown): T | undefined =>
   lista.includes(v as T) ? (v as T) : undefined;
+// Texto simplificado para comparar (sem acento, minúsculas, sem pontuação)
+const simplificar = (v: unknown) =>
+  texto(v)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+const parecidos = (a: unknown, b: unknown) => {
+  const x = simplificar(a);
+  const y = simplificar(b);
+  return x === y || (x.length > 0 && y.length > 0 && (x.includes(y) || y.includes(x)));
+};
 // Tira caracteres que quebram o filtro do Supabase
 const termoDeBusca = (v: unknown) => texto(v).replace(/[,()%*\\]/g, " ").trim();
 
@@ -210,6 +229,32 @@ async function registrarLancamento(
 
   const data = entrada.data === undefined || entrada.data === "" ? hojeSP() : entrada.data;
   if (!dataValida(data)) return { ok: false, erro: "Data inválida. Use YYYY-MM-DD." };
+
+  // Trava contra duplicado: mesmo lançamento registrado nos últimos 15 minutos
+  if (entrada.confirmar_duplicado !== true) {
+    const desde = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const { data: recentes, error: erroRecentes } = await supabase
+      .from("transactions")
+      .select("id, description, date, created_at")
+      .eq("type", tipo)
+      .eq("amount_cents", centavos)
+      .eq("date", data)
+      .gte("created_at", desde);
+    if (erroRecentes) throw erroRecentes;
+    const igual = (recentes ?? []).find((r) => parecidos(r.description, entrada.descricao));
+    if (igual) {
+      return {
+        ok: true,
+        dados: {
+          nao_registrado: true,
+          motivo: `Já existe ${tipo === "income" ? "uma receita" : "um gasto"} igual registrado há poucos minutos (${formatarReais(centavos)}, "${igual.description}"). Nada foi gravado de novo.`,
+          o_que_fazer:
+            "Se o usuário estava só repetindo ou confirmando, diga que já estava registrado. Só registre de novo (com confirmar_duplicado=true) se ele disser que é outro lançamento.",
+          saldo_atual: formatarReais(await saldoAtual(supabase)),
+        },
+      };
+    }
+  }
 
   const { data: linha, error } = await supabase
     .from("transactions")
@@ -334,6 +379,25 @@ async function criarCompromisso(supabase: SupabaseClient, entrada: Entrada): Pro
   const inicio = horaLocalParaISO(entrada.data_hora);
   if (!inicio) return { ok: false, erro: "Data/hora inválida ou sem horário. Pergunte o horário ao usuário." };
   const categoria = umDe(CATEGORIAS_COMPROMISSO, entrada.categoria) ?? "outros";
+
+  // Trava contra duplicado: compromisso parecido no mesmo dia e horário
+  const { data: mesmoHorario, error: erroBusca } = await supabase
+    .from("appointments")
+    .select("id, title, category, starts_at, status, notes")
+    .eq("starts_at", inicio)
+    .neq("status", "archived");
+  if (erroBusca) throw erroBusca;
+  const igual = (mesmoHorario ?? []).find((c) => parecidos(c.title, titulo) || c.category === categoria);
+  if (igual) {
+    return {
+      ok: true,
+      dados: {
+        ja_existia: true,
+        aviso: "Este compromisso já estava salvo. Nada foi criado de novo.",
+        compromisso: compromissoParaIA(igual),
+      },
+    };
+  }
 
   const { data, error } = await supabase
     .from("appointments")

@@ -76,12 +76,17 @@ Depois confira as abas **Finanças** e **Agenda**.
 
 ### Falar em vez de digitar (Fase 2)
 
-Toque no botão de **microfone** ao lado do campo, fale e faça uma pausa. O texto aparece enquanto você fala e é enviado sozinho quando você para.
+Funciona como o ditado do app do Claude:
 
-- Para enviar antes, toque no botão vermelho (■). Para desistir, toque em **Cancelar**.
-- Na primeira vez, o navegador pede permissão para usar o microfone: toque em **Permitir**.
+1. Toque no **microfone** e fale. O texto vai aparecendo no campo. Pode fazer pausas: ele continua ouvindo.
+2. Quando terminar, toque no botão vermelho (■). O texto fica no campo para você conferir ou corrigir.
+3. Toque em **enviar** (a setinha). Nada é enviado sozinho.
+
+- Para desistir do que falou, toque em **Cancelar**.
+- Se tocar em enviar enquanto ainda está ouvindo, ele para e envia o que já está no campo.
+- Para o celular não pedir permissão toda vez, escolha **"Permitir ao usar o app"** ou **"Permitir sempre"**, e não "Só desta vez".
 - Funciona no **Chrome** (Android e PC), no **Edge** e no **Safari** (iPhone). No Firefox não funciona.
-- No iPhone, a **Siri** e o **Ditado** precisam estar ligados em Ajustes. Se no app instalado o microfone não funcionar, teste pelo Safari normal e me avise.
+- No iPhone, a **Siri** e o **Ditado** precisam estar ligados em Ajustes.
 
 Para testar o app "instalável" (PWA), rode a versão de produção:
 

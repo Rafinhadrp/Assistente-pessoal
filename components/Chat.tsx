@@ -18,7 +18,8 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
 
   const voz = useReconhecimentoVoz({
     aoOuvirParcial: (falado) => setTexto(juntar(textoAntesDaVoz.current, falado)),
-    aoTerminar: (falado) => enviar(juntar(textoAntesDaVoz.current, falado)),
+    // Só coloca o texto no campo; a pessoa confere e toca em enviar
+    aoTerminar: (falado) => setTexto(juntar(textoAntesDaVoz.current, falado)),
   });
 
   function alternarMicrofone() {
@@ -120,8 +121,9 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (voz.ouvindo) voz.parar();
-          else enviar(texto);
+          // Enviar enquanto ouve: para de ouvir e manda o que já está no campo
+          if (voz.ouvindo) voz.cancelar();
+          enviar(texto);
         }}
         className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] border-t border-slate-200 bg-slate-50/95 px-3 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95"
       >
@@ -137,7 +139,7 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
           <div className="mb-2 flex items-center justify-between text-sm text-rose-600 dark:text-rose-400">
             <span className="flex items-center gap-2">
               <span className="h-2 w-2 animate-pulse rounded-full bg-rose-500" />
-              Ouvindo… fale e faça uma pausa para enviar
+              Ouvindo… toque em ■ quando terminar
             </span>
             <button type="button" onClick={cancelarVoz} className="text-slate-500 underline dark:text-slate-400">
               Cancelar
@@ -186,7 +188,7 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
           </button>
           <button
             type="submit"
-            disabled={enviando || voz.ouvindo || !texto.trim()}
+            disabled={enviando || !texto.trim()}
             aria-label="Enviar"
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:opacity-40"
           >
