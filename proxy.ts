@@ -4,6 +4,14 @@ import { NextResponse, type NextRequest } from "next/server";
 // Roda antes de cada página: renova a sessão do Supabase e
 // manda para /login quem não estiver logado.
 export async function proxy(request: NextRequest) {
+  // Aviso amigável se as variáveis não foram configuradas (ex: na Vercel)
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return new NextResponse(
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:system-ui;max-width:32rem;margin:3rem auto;padding:0 1rem;line-height:1.5"><h1>Falta configurar</h1><p>As variáveis <code>NEXT_PUBLIC_SUPABASE_URL</code> e <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> não foram encontradas.</p><p>Na Vercel: Settings → Environment Variables. Depois faça um novo deploy (Deployments → ⋯ → Redeploy).</p>',
+      { status: 500, headers: { "Content-Type": "text/html; charset=utf-8" } },
+    );
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

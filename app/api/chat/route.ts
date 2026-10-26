@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { emailPermitido } from "@/lib/acesso";
 import { agoraPorExtenso, hojeSP } from "@/lib/datas";
 import { executarFerramenta, ferramentas } from "@/lib/ferramentas";
 import { criarClienteServidor } from "@/lib/supabase/server";
@@ -36,6 +37,9 @@ export async function POST(request: Request) {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) {
     return NextResponse.json({ erro: "Faça login de novo." }, { status: 401 });
+  }
+  if (!emailPermitido(auth.user.email)) {
+    return NextResponse.json({ erro: "Este e-mail não tem acesso ao assistente." }, { status: 403 });
   }
 
   const corpo = await request.json().catch(() => null);

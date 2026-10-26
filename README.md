@@ -3,6 +3,9 @@
 App pessoal (PWA) para conversar com uma IA que guarda finanças e compromissos.
 Veja o `CLAUDE.md` para a visão completa do projeto. **Fase atual: 1 (MVP, chat por texto).**
 
+> 📱 **Para publicar na internet (Vercel) e instalar no celular, siga [`docs/PUBLICAR.md`](docs/PUBLICAR.md).**
+> Os passos abaixo são para rodar no seu computador, para testes.
+
 ## Requisitos
 
 - Node.js **20.9 ou mais novo** (confira com `node -v`). Recomendado: a versão LTS de nodejs.org.
@@ -45,6 +48,7 @@ Abra o `.env.local` e preencha:
 | `ANTHROPIC_API_KEY` | sua chave `sk-ant-...` |
 | `CLAUDE_MODEL` | deixe vazio (usa `claude-opus-5-5`) ou um mais barato: `claude-sonnet-5-5`, `claude-haiku-5-5` |
 | `CLAUDE_EFFORT` | opcional: `low` deixa as respostas mais rápidas e baratas |
+| `EMAILS_PERMITIDOS` | seu e-mail (só ele pode criar conta e usar o chat). No PC pode ficar vazio; **na Vercel é obrigatório** |
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL do Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | chave anon / publishable |
 | `SUPABASE_SERVICE_ROLE_KEY` | pode ficar vazio por enquanto |

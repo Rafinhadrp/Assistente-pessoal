@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { emailPermitido } from "@/lib/acesso";
 import { criarClienteServidor } from "@/lib/supabase/server";
 
 export type EstadoLogin = { erro?: string; aviso?: string };
@@ -32,6 +33,7 @@ export async function criarConta(_: EstadoLogin, formData: FormData): Promise<Es
   const { email, senha } = lerCampos(formData);
   if (!email || !senha) return { erro: "Preencha e-mail e senha." };
   if (senha.length < 6) return { erro: "A senha precisa ter pelo menos 6 caracteres." };
+  if (!emailPermitido(email)) return { erro: "Este app é particular. Este e-mail não tem acesso." };
 
   const h = await headers();
   const origem = h.get("origin") ?? `https://${h.get("host")}`;
