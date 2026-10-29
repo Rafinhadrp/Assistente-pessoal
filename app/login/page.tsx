@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import LogoAssistente from "@/components/LogoAssistente";
 import { criarConta, entrar, type EstadoLogin } from "./actions";
 
 export default function PaginaLogin() {
@@ -13,10 +14,8 @@ export default function PaginaLogin() {
   return (
     <main className="mx-auto flex min-h-full max-w-sm flex-col justify-center px-6 py-12">
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-indigo-600 text-3xl text-white shadow-lg">
-          ✦
-        </div>
-        <h1 className="text-2xl font-semibold">Assistente</h1>
+        <h1 className="sr-only">Assistente</h1>
+        <LogoAssistente tamanho={128} humor="acenando" comNome />
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {modo === "entrar" ? "Entre para continuar" : "Crie sua conta"}
         </p>

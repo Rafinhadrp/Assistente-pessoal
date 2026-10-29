@@ -1,3 +1,4 @@
+import Mascote from "@/components/Mascote";
 import { formatarReais } from "@/lib/dinheiro";
 import { formatarData, hojeSP, limitesDoMes } from "@/lib/datas";
 import { criarClienteServidor } from "@/lib/supabase/server";
@@ -108,6 +109,7 @@ export default async function PaginaFinancas({
         <h2 className="mb-2 text-sm font-medium text-slate-500 dark:text-slate-400">Lançamentos</h2>
         {lancamentos.length === 0 ? (
           <p className="rounded-2xl bg-white p-6 text-center text-sm text-slate-500 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800">
+            <Mascote humor="fininho" tamanho={72} className="mx-auto mb-2" />
             Nenhum lançamento neste mês. Conte no chat: “gastei 35 no mercado”.
           </p>
         ) : (

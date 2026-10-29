@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { Humor } from "@/lib/humor";
+import Mascote from "./Mascote";
 import { useReconhecimentoVoz } from "./useReconhecimentoVoz";
 
-export type MensagemChat = { id: string; role: "user" | "assistant"; content: string };
+export type MensagemChat = { id: string; role: "user" | "assistant"; content: string; humor?: Humor };
 
 const SUGESTOES = ["Gastei 35 no mercado", "Quanto ainda tenho?", "Tenho médico dia 5 às 14h"];
 
@@ -36,6 +38,8 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
     setTexto(textoAntesDaVoz.current);
   }
 
+  const ultimaResposta = mensagens.findLastIndex((m) => m.role === "assistant");
+
   useEffect(() => {
     fim.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [mensagens, enviando]);
@@ -49,6 +53,7 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
     setMensagens((m) => [...m, { id: crypto.randomUUID(), role: "user", content: mensagem }]);
 
     let resposta: string;
+    let humor: Humor = "erro";
     try {
       const r = await fetch("/api/chat", {
         method: "POST",
@@ -60,12 +65,18 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
         window.location.href = "/login";
         return;
       }
-      resposta = json.resposta ?? `⚠️ ${json.erro ?? "Algo deu errado."}`;
+      if (json.resposta) {
+        resposta = json.resposta;
+        humor = json.humor ?? "feliz";
+      } else {
+        resposta = json.erro ?? "Algo deu errado.";
+      }
     } catch {
-      resposta = "⚠️ Sem conexão. Verifique sua internet e tente de novo.";
+      resposta = "Sem conexão. Verifique sua internet e tente de novo.";
+      humor = "tonto";
     }
 
-    setMensagens((m) => [...m, { id: crypto.randomUUID(), role: "assistant", content: resposta }]);
+    setMensagens((m) => [...m, { id: crypto.randomUUID(), role: "assistant", content: resposta, humor }]);
     setEnviando(false);
     campo.current?.focus();
   }
@@ -74,7 +85,8 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
     <div className="flex flex-1 flex-col">
       <div className="flex-1 space-y-3 px-4 py-4">
         {mensagens.length === 0 && (
-          <div className="mt-10 text-center text-slate-500 dark:text-slate-400">
+          <div className="mt-8 text-center text-slate-500 dark:text-slate-400">
+            <Mascote humor="acenando" tamanho={112} className="mx-auto mb-2" />
             <p className="mb-4">Olá! Me conte um gasto, uma receita ou um compromisso.</p>
             <div className="flex flex-wrap justify-center gap-2">
               {SUGESTOES.map((s) => (
@@ -90,8 +102,17 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
           </div>
         )}
 
-        {mensagens.map((m) => (
-          <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+        {mensagens.map((m, i) => (
+          <div key={m.id} className={`flex items-end gap-1.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+            {m.role === "assistant" && (
+              <Mascote
+                humor={m.humor ?? "feliz"}
+                tamanho={40}
+                // Só a última resposta fica animada; as antigas ficam paradas (mais leve)
+                animado={i === ultimaResposta}
+                className="-ml-1 mb-0.5 shrink-0"
+              />
+            )}
             <div
               className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 leading-relaxed ${
                 m.role === "user"
@@ -105,7 +126,8 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
         ))}
 
         {enviando && (
-          <div className="flex justify-start">
+          <div className="flex items-end justify-start gap-1.5">
+            <Mascote humor="pensando" tamanho={40} className="-ml-1 mb-0.5 shrink-0" />
             <div className="rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
               <span className="inline-flex gap-1">
                 <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
@@ -138,7 +160,7 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
         {voz.ouvindo && (
           <div className="mb-2 flex items-center justify-between text-sm text-rose-600 dark:text-rose-400">
             <span className="flex items-center gap-2">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-rose-500" />
+              <Mascote humor="espiando" tamanho={28} />
               Ouvindo… toque em ■ quando terminar
             </span>
             <button type="button" onClick={cancelarVoz} className="text-slate-500 underline dark:text-slate-400">

@@ -1,7 +1,7 @@
 // Service worker simples: guarda os arquivos estáticos para abrir mais rápido
 // e mostra uma página amigável quando estiver sem internet.
 // Dados (finanças, agenda, chat) sempre vêm da internet, nunca do cache.
-const CACHE = "assistente-v1";
+const CACHE = "assistente-v2";
 
 self.addEventListener("install", () => self.skipWaiting());
 
@@ -20,8 +20,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Arquivos estáticos do Next e ícones: cache primeiro
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/")) {
+  // Arquivos estáticos do Next, ícones e imagens do mascote: cache primeiro
+  if (/^\/(_next\/static|icons|mascote|logo)\//.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then(
         (salvo) =>

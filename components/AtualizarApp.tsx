@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Mascote from "./Mascote";
 
 const LIMITE = 80; // quanto puxar (px) para atualizar
 const MAXIMO = 120; // até onde a bolinha desce
@@ -109,19 +110,12 @@ export default function AtualizarApp({ versao }: { versao: string }) {
           transition: inicioY.current === null ? "transform 200ms, opacity 200ms" : "none",
         }}
       >
-        <div className="grid h-10 w-10 place-items-center rounded-full bg-white shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-          <svg
-            viewBox="0 0 24 24"
-            className={`h-5 w-5 text-indigo-600 dark:text-indigo-400 ${atualizando ? "animate-spin" : ""}`}
-            style={atualizando ? undefined : { transform: `rotate(${progresso * 300}deg)`, opacity: 0.4 + progresso * 0.6 }}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          >
-            <path d="M20 12a8 8 0 1 1-2.34-5.66" />
-            <path d="M20 4v4h-4" />
-          </svg>
+        <div
+          className="grid h-12 w-12 place-items-center rounded-full bg-white shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
+          style={{ transform: `scale(${0.6 + progresso * 0.4})` }}
+        >
+          {/* O mascote "carregando" aparece quando já dá para soltar */}
+          <Mascote humor={atualizando || progresso >= 1 ? "carregando" : "espiando"} tamanho={36} />
         </div>
       </div>
 

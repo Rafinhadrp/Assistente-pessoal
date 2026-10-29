@@ -4,6 +4,7 @@ import { emailPermitido } from "@/lib/acesso";
 import { formatarReais } from "@/lib/dinheiro";
 import { agoraPorExtenso, formatarData, formatarDataHora, hojeSP, inicioDoDiaISO } from "@/lib/datas";
 import { executarFerramenta, ferramentas } from "@/lib/ferramentas";
+import { HUMORES, separarHumor } from "@/lib/humor";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -27,6 +28,11 @@ Como entender o usuário (ele costuma falar por voz, então o texto pode vir sem
 - "doze e cinquenta" = 12,50; "cinquentinha" = 50; "mil e duzentos" = 1200; "920" = R$ 920,00.
 - Interprete pelo sentido. Se uma palavra parecer mal reconhecida, use o contexto; se mudar o significado (valor, data, horário), pergunte.
 - Mensagens soltas ou sem pedido claro (ex: "fala", "oi", "e aí", "tá", "ok") são só conversa: responda brevemente e pergunte como pode ajudar. Nunca repita ou refaça ações anteriores por causa delas.
+
+Seu mascote:
+- O app mostra um mascote (o <R/>, um robozinho em pixel art) ao lado de cada resposta sua. Comece TODA resposta com a etiqueta [humor:NOME], escolhendo a carinha que combina com o que você vai dizer. Opções: ${HUMORES.join(", ")}.
+- Exemplos: recebeu dinheiro = feliz ou dancando; gasto alto = assustado; saldo negativo = chorando; piada = rindo; dúvida ou pergunta = pensando; cumprimento = acenando; boa noite = dormindo; algo deu errado = erro.
+- A etiqueta não aparece nem é lida para o usuário; não comente sobre ela.
 
 Regras de verdade (muito importantes):
 - Só diga que registrou, salvou, marcou ou alterou algo depois que a ferramenta devolver sucesso nesta mesma resposta, e confirme com os dados que ela devolveu.
@@ -171,7 +177,7 @@ export async function POST(request: Request) {
       });
 
       if (msg.stop_reason === "refusal") {
-        resposta = "Desculpe, não consigo ajudar com isso.";
+        resposta = "[humor:desconfiado] Desculpe, não consigo ajudar com isso.";
         break;
       }
 
@@ -228,9 +234,12 @@ export async function POST(request: Request) {
   }
 
   if (!resposta) {
-    resposta = "Fiz o que pude, mas não consegui terminar. Pode repetir de outro jeito?";
+    resposta = "[humor:tonto] Fiz o que pude, mas não consegui terminar. Pode repetir de outro jeito?";
   }
 
+  // Guarda com a etiqueta de humor (a IA vê no histórico); a tela recebe separado
+  const { humor, texto } = separarHumor(resposta);
+  resposta = `[humor:${humor}] ${texto}`;
   const registro = acoes.length ? acoes.join(" | ") : null;
   const { error: erroSalvar } = await supabase
     .from("messages")
@@ -239,5 +248,5 @@ export async function POST(request: Request) {
     // Coluna "actions" ainda não criada no banco: salva só o texto
     await supabase.from("messages").insert({ role: "assistant", content: resposta });
   }
-  return NextResponse.json({ resposta });
+  return NextResponse.json({ resposta: texto, humor });
 }

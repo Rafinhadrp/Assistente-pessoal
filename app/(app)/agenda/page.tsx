@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Mascote from "@/components/Mascote";
 import { formatarDataHora, hojeSP, inicioDoDiaISO } from "@/lib/datas";
 import { criarClienteServidor } from "@/lib/supabase/server";
 
@@ -83,6 +84,7 @@ export default async function PaginaAgenda({ searchParams }: { searchParams: Pro
 
       {compromissos.length === 0 ? (
         <p className="rounded-2xl bg-white p-6 text-center text-sm text-slate-500 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800">
+          <Mascote humor={historico ? "bocejando" : "dormindo"} tamanho={72} className="mx-auto mb-2" />
           {historico
             ? "Nada no histórico ainda."
             : "Nenhum compromisso pendente. Conte no chat: “tenho médico dia 5 às 14h”."}
