@@ -17,6 +17,7 @@ Este arquivo responde três perguntas: **o que já está pronto**, **o que está
 | Atualizar o app | ✅ Puxar a tela para baixo, botão ↻ e aviso "Nova versão disponível" |
 | Mascote `<R/>` | ✅ Aparece ao lado das respostas, e a IA escolhe a carinha de cada resposta |
 | Logo do Assistente | ✅ Mascote + balão de conversa no login e no ícone da tela de início |
+| **Fase 5 – Busca na internet** | ✅ A IA pesquisa quando precisa de informação atual (clima, notícias, lojas, preços). Embaixo de cada resposta: **🌐 pesquisou na internet** (teve custo extra; toque para ver as fontes) ou **✓ sem busca** (sem custo extra). No máximo 3 buscas por resposta |
 
 ---
 
@@ -52,7 +53,6 @@ Já foi enviado para o GitHub/Vercel. **Para funcionar, rode o `supabase/schema.
 ### Fases que faltam (do plano original)
 - [ ] **Fase 3 – Voz de saída:** o assistente fala a resposta em voz alta, com botão de liga/desliga.
 - [ ] **Fase 4 – Notas** (tela de notas com busca) e a **regra de arquivamento** (compromissos passados arquivam sozinhos; os de saúde perguntam "quer guardar no histórico ou anotar como foi?").
-- [ ] **Fase 5 – Perguntas com informação atual** (busca na internet pela IA).
 - [ ] **Fase 6 – Lembretes por notificação** ("amanhã você tem médico").
 - [ ] **Fase 7 – Novas categorias** (lojas, metas etc.) conforme você precisar.
 
@@ -63,7 +63,10 @@ Já foi enviado para o GitHub/Vercel. **Para funcionar, rode o `supabase/schema.
 - [ ] **Rodar o `supabase/schema.sql`** no Supabase: abra **SQL Editor**, clique em **New query**, cole o arquivo inteiro e clique em **Run**. Pode rodar quantas vezes quiser, porque ele não apaga dados. Isso cria:
   - a coluna do histórico de ações (que evita duplicados);
   - a lixeira;
-  - a marcação "editado por você".
+  - a marcação "editado por você";
+  - a coluna que guarda as buscas e as fontes de cada resposta (o selo 🌐 / ✓ continua aparecendo depois que você recarrega).
+- [ ] **(Opcional) Colocar sua cidade** na Vercel: **Settings → Environment Variables**, variável `CIDADE` (ex: `Campinas`), e depois **Redeploy**. Assim "como está o clima hoje?" já sabe onde você está.
+- [ ] **Se nunca aparecer 🌐:** a busca na internet pode estar desligada na sua conta da Anthropic. Em console.anthropic.com, procure nas configurações da organização a opção de **web search** e ligue. Enquanto estiver desligada, o app continua funcionando normalmente, só que sem buscar.
 - [ ] **Desligar novos cadastros** no Supabase depois de criar sua conta: **Authentication → Sign In / Providers → "Allow new users to sign up"** desligado.
 - [ ] **Testar o microfone no seu celular** várias vezes seguidas, sem recarregar. Se falhar, me diga o modelo do celular e se usa o app instalado ou o navegador.
 

@@ -79,6 +79,10 @@ create index if not exists messages_user_created_idx
 -- (ex: "compromisso criado"), para a IA não achar que esqueceu e duplicar.
 alter table public.messages add column if not exists actions text;
 
+-- Informações extras de cada resposta, para mostrar na tela:
+-- quantas buscas na internet ela usou (custo extra) e as fontes consultadas.
+alter table public.messages add column if not exists extras jsonb;
+
 -- Lixeira e edição manual:
 --   deleted_at = quando foi para a lixeira (vazio = não está na lixeira).
 --                Depois de 30 dias na lixeira, é apagado de vez.

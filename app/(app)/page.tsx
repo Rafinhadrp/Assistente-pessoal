@@ -17,16 +17,17 @@ function saudacao() {
 
 export default async function PaginaChat() {
   const supabase = await criarClienteServidor();
-  const { data } = await supabase
-    .from("messages")
-    .select("id, role, content")
-    .order("created_at", { ascending: false })
-    .limit(50);
+  type Linha = MensagemChat & { extras?: { buscas?: number; fontes?: MensagemChat["fontes"] } | null };
+  const buscar = (colunas: string) =>
+    supabase.from("messages").select(colunas).order("created_at", { ascending: false }).limit(50).returns<Linha[]>();
+  let { data, error } = await buscar("id, role, content, extras");
+  if (error) ({ data } = await buscar("id, role, content")); // banco ainda sem a coluna "extras"
+
   // As respostas são guardadas com a etiqueta de humor do mascote: separa aqui
-  const historico = ((data ?? []) as MensagemChat[]).reverse().map((m) => {
+  const historico: MensagemChat[] = (data ?? []).reverse().map(({ extras, ...m }) => {
     if (m.role !== "assistant") return m;
     const { humor, texto } = separarHumor(m.content);
-    return { ...m, content: texto, humor };
+    return { ...m, content: texto, humor, buscas: extras?.buscas ?? 0, fontes: extras?.fontes ?? [] };
   });
 
   return (

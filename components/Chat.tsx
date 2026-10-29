@@ -6,7 +6,15 @@ import Mascote from "./Mascote";
 import { IconeEnviar, IconeFechar, IconeMicrofone } from "./ui/Icones";
 import { useReconhecimentoVoz } from "./useReconhecimentoVoz";
 
-export type MensagemChat = { id: string; role: "user" | "assistant"; content: string; humor?: Humor };
+export type MensagemChat = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  humor?: Humor;
+  // Quantas buscas na internet a resposta usou (custo extra) e de onde veio a informação
+  buscas?: number;
+  fontes?: { url: string; titulo: string }[];
+};
 
 const SUGESTOES = ["Gastei 35 no mercado", "Quanto ainda tenho?", "Tenho médico dia 5 às 14h", "O que tenho essa semana?"];
 
@@ -63,6 +71,8 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
 
     let resposta: string;
     let humor: Humor = "erro";
+    let buscas: number | undefined;
+    let fontes: MensagemChat["fontes"];
     try {
       const r = await fetch("/api/chat", {
         method: "POST",
@@ -77,6 +87,8 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
       if (json.resposta) {
         resposta = json.resposta;
         humor = json.humor ?? "feliz";
+        buscas = json.buscas ?? 0;
+        fontes = json.fontes ?? [];
       } else {
         resposta = json.erro ?? "Algo deu errado.";
       }
@@ -85,7 +97,10 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
       humor = "tonto";
     }
 
-    setMensagens((m) => [...m, { id: crypto.randomUUID(), role: "assistant", content: resposta, humor }]);
+    setMensagens((m) => [
+      ...m,
+      { id: crypto.randomUUID(), role: "assistant", content: resposta, humor, buscas, fontes },
+    ]);
     setEnviando(false);
   }
 
@@ -125,8 +140,11 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
                 animado={i === ultimaResposta}
                 className="-mb-1 -ml-1.5 shrink-0"
               />
-              <div className="vidro whitespace-pre-wrap rounded-[22px] rounded-bl-md px-4 py-2.5 leading-relaxed">
-                {m.content}
+              <div className="min-w-0">
+                <div className="vidro whitespace-pre-wrap rounded-[22px] rounded-bl-md px-4 py-2.5 leading-relaxed">
+                  {m.content}
+                </div>
+                <SeloCusto buscas={m.buscas} fontes={m.fontes} />
               </div>
             </div>
           ),
@@ -193,7 +211,7 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
             }}
             rows={1}
             readOnly={voz.ouvindo}
-            placeholder={voz.ouvindo ? "Pode falar..." : "Escreva ou toque no microfone"}
+            placeholder={voz.ouvindo ? "Pode falar..." : "Escreva ou fale…"}
             className="max-h-36 min-h-11 flex-1 resize-none bg-transparent px-3.5 py-2.5 leading-6 outline-none placeholder:text-suave/70"
           />
           <button
@@ -225,6 +243,45 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+// Selo embaixo de cada resposta: mostra se ela pesquisou na internet (custo extra) ou não
+function SeloCusto({ buscas, fontes }: { buscas?: number; fontes?: MensagemChat["fontes"] }) {
+  const [aberto, setAberto] = useState(false);
+  if (buscas === undefined) return null; // mensagens de erro do próprio app
+  if (buscas === 0) {
+    return (
+      <p className="mt-1 pl-2 text-[11px] text-suave/70" title="Resposta normal, sem custo extra">
+        ✓ sem busca
+      </p>
+    );
+  }
+  return (
+    <div className="mt-1 pl-1">
+      <button
+        type="button"
+        onClick={() => setAberto((a) => !a)}
+        aria-expanded={aberto}
+        title="Esta resposta pesquisou na internet (tem custo extra)"
+        className="inline-flex items-center gap-1 rounded-full bg-aviso-suave px-2 py-0.5 text-[11px] font-medium text-aviso transition active:scale-95"
+      >
+        🌐 pesquisou na internet · {buscas} {buscas === 1 ? "busca" : "buscas"}
+        {fontes && fontes.length > 0 && <span aria-hidden>{aberto ? "▴" : "▾"}</span>}
+      </button>
+      {aberto && fontes && fontes.length > 0 && (
+        <ul className="vidro mt-1.5 animate-entrar space-y-1 rounded-2xl px-3 py-2 text-xs">
+          {fontes.map((f) => (
+            <li key={f.url} className="truncate">
+              <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-destaque underline-offset-2 hover:underline">
+                {f.titulo || new URL(f.url).hostname}
+              </a>
+              <span className="text-suave"> · {new URL(f.url).hostname.replace(/^www\./, "")}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

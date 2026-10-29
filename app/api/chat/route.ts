@@ -14,6 +14,23 @@ const MODELO = process.env.CLAUDE_MODEL || "claude-opus-5-5";
 const ESFORCO = process.env.CLAUDE_EFFORT as "low" | "medium" | "high" | undefined;
 const MAX_VOLTAS = 8; // limite de idas e vindas com as ferramentas
 const MENSAGENS_DE_CONTEXTO = 20;
+const CIDADE = process.env.CIDADE?.trim() || null; // ajuda no clima e em buscas locais
+const BUSCA_LIGADA = process.env.BUSCA_NA_INTERNET !== "desligada";
+
+// Busca na internet (feita pelos servidores da Anthropic; tem custo por busca).
+// Os modelos Haiku usam a versão básica; os demais, a versão com filtro inteligente.
+const buscaNaInternet: Anthropic.Beta.BetaToolUnion = {
+  ...(MODELO.includes("haiku")
+    ? { type: "web_search_20250305" as const, name: "web_search" as const }
+    : { type: "web_search_20260209" as const, name: "web_search" as const }),
+  max_uses: 3, // no máximo 3 buscas por resposta, para controlar o custo
+  user_location: {
+    type: "approximate" as const,
+    country: "BR",
+    timezone: "America/Sao_Paulo",
+    ...(CIDADE ? { city: CIDADE } : {}),
+  },
+};
 
 const anthropic = new Anthropic(); // lê ANTHROPIC_API_KEY do ambiente
 
@@ -22,7 +39,12 @@ const INSTRUCOES = `Você é o assistente pessoal de uma única pessoa. Responda
 O que você faz:
 - Registra receitas e gastos, consulta saldo e lançamentos.
 - Cria, consulta, remarca e atualiza compromissos da agenda.
-- Responde perguntas gerais do dia a dia com o seu conhecimento.
+- Responde perguntas gerais do dia a dia.
+- Pesquisa na internet (ferramenta web_search) quando precisa de informação atual: clima, notícias, resultados, horários e endereços de lojas, preços, eventos.
+
+Quando pesquisar na internet:
+- Cada busca tem custo. Só pesquise quando a resposta depender de informação atual ou que você não sabe com segurança. Para perguntas sobre os dados do usuário (dinheiro, agenda), use as outras ferramentas, nunca a busca. Para conhecimento geral estável (receitas, conceitos, conversões), responda sem pesquisar.
+- Prefira uma busca bem feita a várias. Responda de forma curta e diga de onde veio a informação (ex: "segundo o Climatempo").
 
 Como entender o usuário (ele costuma falar por voz, então o texto pode vir sem pontuação ou com erros de reconhecimento):
 - "doze e cinquenta" = 12,50; "cinquentinha" = 50; "mil e duzentos" = 1200; "920" = R$ 920,00.
@@ -158,25 +180,51 @@ export async function POST(request: Request) {
     // Parte que muda a cada pedido fica por último
     {
       type: "text",
-      text: `Agora é ${agoraPorExtenso()} (horário de Brasília). Hoje é ${hojeSP()} no formato YYYY-MM-DD. Use isso para entender "hoje", "amanhã", "dia 5", "semana que vem".\n\n${await situacaoAtual(supabase)}`,
+      text: `Agora é ${agoraPorExtenso()} (horário de Brasília). Hoje é ${hojeSP()} no formato YYYY-MM-DD. Use isso para entender "hoje", "amanhã", "dia 5", "semana que vem".${CIDADE ? ` O usuário mora em ${CIDADE}: use essa cidade quando ele perguntar do clima ou de lugares sem dizer onde.` : ""}\n\n${await situacaoAtual(supabase)}`,
     },
   ];
 
   let resposta = "";
+  let humorEscolhido: string | null = null;
   const acoes: string[] = [];
+  let buscas = 0; // quantas buscas na internet esta resposta usou (custo extra)
+  const fontes = new Map<string, string>(); // url -> título
+  let comBusca = BUSCA_LIGADA;
   try {
     for (let volta = 0; volta < MAX_VOLTAS; volta++) {
-      const msg = await anthropic.beta.messages.create({
+      const pedido = {
         model: MODELO,
         max_tokens: 16000,
         system: sistema,
-        tools: ferramentas,
+        tools: comBusca ? [...ferramentas, buscaNaInternet] : ferramentas,
         messages: mensagens,
         // Se o modelo recusar por política, a API tenta um modelo reserva sozinha
         betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
+        fallbacks: "default" as const,
         ...(ESFORCO ? { output_config: { effort: ESFORCO } } : {}),
-      });
+      };
+      let msg: Anthropic.Beta.BetaMessage;
+      try {
+        msg = await anthropic.beta.messages.create(pedido);
+      } catch (erro) {
+        // Se a busca na internet estiver desativada na conta da Anthropic,
+        // segue sem ela em vez de quebrar o chat
+        if (comBusca && volta === 0 && erro instanceof Anthropic.BadRequestError) {
+          console.error("Busca na internet recusada pela API; seguindo sem ela:", erro.message);
+          comBusca = false;
+          volta--;
+          continue;
+        }
+        throw erro;
+      }
+
+      buscas += msg.usage.server_tool_use?.web_search_requests ?? 0;
+      for (const bloco of msg.content) {
+        if (bloco.type !== "text") continue;
+        for (const c of bloco.citations ?? []) {
+          if (c.type === "web_search_result_location" && !fontes.has(c.url)) fontes.set(c.url, c.title ?? c.url);
+        }
+      }
 
       if (msg.stop_reason === "refusal") {
         resposta = "[humor:desconfiado] Desculpe, não consigo ajudar com isso.";
@@ -193,11 +241,16 @@ export async function POST(request: Request) {
       if (msg.stop_reason === "pause_turn") continue;
 
       if (chamadas.length === 0 || msg.stop_reason !== "tool_use") {
-        resposta = msg.content
-          .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text")
-          .map((b) => b.text)
-          .join("\n")
-          .trim();
+        const textos = (blocos: Anthropic.Beta.BetaContentBlock[]) =>
+          blocos
+            .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text")
+            .map((b) => b.text)
+            .join("");
+        // A carinha pode vir antes da busca; a resposta é o que vem depois dela
+        // (com citações, o texto chega em vários pedaços que se juntam sem quebra)
+        humorEscolhido = separarHumor(textos(msg.content)).humor;
+        const ultimaBusca = msg.content.findLastIndex((b) => b.type === "web_search_tool_result");
+        resposta = textos(msg.content.slice(ultimaBusca + 1)).trim() || textos(msg.content).trim();
         break;
       }
 
@@ -240,15 +293,24 @@ export async function POST(request: Request) {
   }
 
   // Guarda com a etiqueta de humor (a IA vê no histórico); a tela recebe separado
-  const { humor, texto } = separarHumor(resposta);
+  const separado = separarHumor(resposta);
+  const texto = separado.texto;
+  const humor = /\[humor:/i.test(resposta) ? separado.humor : (humorEscolhido as typeof separado.humor | null) ?? separado.humor;
   resposta = `[humor:${humor}] ${texto}`;
+  if (buscas > 0) acoes.push(`web_search: ${buscas} ${buscas === 1 ? "busca" : "buscas"} na internet`);
   const registro = acoes.length ? acoes.join(" | ") : null;
-  const { error: erroSalvar } = await supabase
-    .from("messages")
-    .insert({ role: "assistant", content: resposta, actions: registro });
-  if (erroSalvar) {
-    // Coluna "actions" ainda não criada no banco: salva só o texto
-    await supabase.from("messages").insert({ role: "assistant", content: resposta });
+  const listaFontes = [...fontes].slice(0, 5).map(([url, titulo]) => ({ url, titulo }));
+  const extras = { buscas, fontes: listaFontes };
+
+  // Salva tentando do mais completo ao mais simples (se o banco ainda não tiver as colunas novas)
+  const tentativas: Record<string, unknown>[] = [
+    { role: "assistant", content: resposta, actions: registro, extras },
+    { role: "assistant", content: resposta, actions: registro },
+    { role: "assistant", content: resposta },
+  ];
+  for (const linha of tentativas) {
+    const { error } = await supabase.from("messages").insert(linha);
+    if (!error) break;
   }
-  return NextResponse.json({ resposta: texto, humor });
+  return NextResponse.json({ resposta: texto, humor, buscas, fontes: listaFontes });
 }
