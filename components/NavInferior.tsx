@@ -2,32 +2,38 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { IconeCalendario, IconeCarteira, IconeChat } from "./ui/Icones";
 
 const abas = [
-  { href: "/", rotulo: "Chat", icone: "💬" },
-  { href: "/financas", rotulo: "Finanças", icone: "💰" },
-  { href: "/agenda", rotulo: "Agenda", icone: "📅" },
+  { href: "/", rotulo: "Chat", Icone: IconeChat },
+  { href: "/financas", rotulo: "Finanças", Icone: IconeCarteira },
+  { href: "/agenda", rotulo: "Agenda", Icone: IconeCalendario },
 ];
 
 export default function NavInferior() {
   const caminho = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
-      <ul className="mx-auto flex max-w-2xl">
-        {abas.map((aba) => {
-          const ativa = aba.href === "/" ? caminho === "/" : caminho.startsWith(aba.href);
+    <nav className="fixed inset-x-0 bottom-0 z-30 vidro-forte border-t pb-[env(safe-area-inset-bottom)]">
+      <ul className="mx-auto flex max-w-2xl px-2">
+        {abas.map(({ href, rotulo, Icone }) => {
+          const ativa = href === "/" ? caminho === "/" : caminho.startsWith(href);
           return (
-            <li key={aba.href} className="flex-1">
+            <li key={href} className="flex-1">
               <Link
-                href={aba.href}
-                className={`flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition ${
-                  ativa
-                    ? "text-indigo-600 dark:text-indigo-400"
-                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                href={href}
+                aria-current={ativa ? "page" : undefined}
+                className={`group flex flex-col items-center gap-1 py-2 text-[11px] font-semibold transition ${
+                  ativa ? "text-destaque" : "text-suave hover:text-texto"
                 }`}
               >
-                <span className="text-xl leading-none">{aba.icone}</span>
-                {aba.rotulo}
+                <span
+                  className={`grid h-8 w-14 place-items-center rounded-full transition ${
+                    ativa ? "bg-destaque-suave" : "group-active:bg-superficie-2"
+                  }`}
+                >
+                  <Icone className="h-[22px] w-[22px]" />
+                </span>
+                {rotulo}
               </Link>
             </li>
           );

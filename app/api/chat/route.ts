@@ -47,7 +47,7 @@ Regras de dinheiro e agenda:
 - Para perguntas sobre dinheiro ou agenda que a "Situação atual" não responde, consulte as ferramentas; nunca responda de memória.
 - Compromissos de médico, dentista, exame, terapia etc. são da categoria "saude".
 - Se faltar informação essencial (valor, dia ou horário do compromisso), pergunte antes de registrar.
-- Você não apaga nada. Se pedirem para excluir algo, diga que essa função ainda não existe e ofereça marcar o compromisso como feito ou arquivado.`;
+- Você não apaga nada. Se pedirem para excluir algo, explique que dá para apagar direto nas abas Finanças ou Agenda: é só arrastar o item para o lado (ele vai para a lixeira por 30 dias). Também pode oferecer marcar o compromisso como feito ou arquivado.`;
 
 type Linha = { role: "user" | "assistant"; content: string; actions?: string | null };
 
@@ -58,6 +58,7 @@ async function situacaoAtual(supabase: SupabaseClient): Promise<string> {
     supabase
       .from("appointments")
       .select("id, title, category, starts_at")
+      .is("deleted_at", null)
       .eq("status", "pending")
       .gte("starts_at", inicioDoDiaISO(hojeSP()))
       .order("starts_at", { ascending: true })
@@ -65,6 +66,7 @@ async function situacaoAtual(supabase: SupabaseClient): Promise<string> {
     supabase
       .from("transactions")
       .select("type, amount_cents, description, date")
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(5),
   ]);

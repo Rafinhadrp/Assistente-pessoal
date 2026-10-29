@@ -12,54 +12,44 @@ export default function PaginaLogin() {
   const ocupado = entrando || criando;
 
   return (
-    <main className="mx-auto flex min-h-full max-w-sm flex-col justify-center px-6 py-12">
-      <div className="mb-8 text-center">
+    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-[calc(2rem+env(safe-area-inset-top))]">
+      <div className="mb-7 flex animate-entrar flex-col items-center text-center">
         <h1 className="sr-only">Assistente</h1>
-        <LogoAssistente tamanho={128} humor="acenando" comNome />
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {modo === "entrar" ? "Entre para continuar" : "Crie sua conta"}
+        <LogoAssistente tamanho={136} humor="acenando" comNome />
+        <p className="mt-2 text-suave">
+          {modo === "entrar" ? "Que bom te ver de novo." : "Vamos começar? Crie sua conta."}
         </p>
       </div>
 
-      <form action={modo === "entrar" ? acaoEntrar : acaoCriar} className="space-y-4">
+      <form
+        action={modo === "entrar" ? acaoEntrar : acaoCriar}
+        className="cartao animate-entrar space-y-4 p-5 [animation-delay:80ms]"
+      >
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">E-mail</span>
-          <input
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-900"
-          />
+          <span className="rotulo">E-mail</span>
+          <input name="email" type="email" required autoComplete="email" placeholder="voce@email.com" className="campo" />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Senha</span>
+          <span className="rotulo">Senha</span>
           <input
             name="senha"
             type="password"
             required
             minLength={6}
             autoComplete={modo === "entrar" ? "current-password" : "new-password"}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-900"
+            placeholder={modo === "entrar" ? "Sua senha" : "Pelo menos 6 caracteres"}
+            className="campo"
           />
         </label>
 
         {estado.erro && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-            {estado.erro}
-          </p>
+          <p className="animate-entrar rounded-xl bg-gasto-suave px-3 py-2 text-sm text-gasto">{estado.erro}</p>
         )}
         {estado.aviso && (
-          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-            {estado.aviso}
-          </p>
+          <p className="animate-entrar rounded-xl bg-receita-suave px-3 py-2 text-sm text-receita">{estado.aviso}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={ocupado}
-          className="w-full rounded-xl bg-indigo-600 py-3 font-medium text-white transition hover:bg-indigo-500 disabled:opacity-60"
-        >
+        <button type="submit" disabled={ocupado} className="botao-primario w-full">
           {ocupado ? "Aguarde..." : modo === "entrar" ? "Entrar" : "Criar conta"}
         </button>
       </form>
@@ -67,9 +57,17 @@ export default function PaginaLogin() {
       <button
         type="button"
         onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}
-        className="mt-6 text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+        className="mt-5 text-sm text-suave transition hover:text-texto"
       >
-        {modo === "entrar" ? "Ainda não tem conta? Criar conta" : "Já tem conta? Entrar"}
+        {modo === "entrar" ? (
+          <>
+            Ainda não tem conta? <span className="font-semibold text-destaque">Criar conta</span>
+          </>
+        ) : (
+          <>
+            Já tem conta? <span className="font-semibold text-destaque">Entrar</span>
+          </>
+        )}
       </button>
     </main>
   );

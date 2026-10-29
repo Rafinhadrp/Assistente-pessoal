@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Humor } from "@/lib/humor";
 import Mascote from "./Mascote";
+import { IconeEnviar, IconeFechar, IconeMicrofone } from "./ui/Icones";
 import { useReconhecimentoVoz } from "./useReconhecimentoVoz";
 
 export type MensagemChat = { id: string; role: "user" | "assistant"; content: string; humor?: Humor };
 
-const SUGESTOES = ["Gastei 35 no mercado", "Quanto ainda tenho?", "Tenho médico dia 5 às 14h"];
+const SUGESTOES = ["Gastei 35 no mercado", "Quanto ainda tenho?", "Tenho médico dia 5 às 14h", "O que tenho essa semana?"];
 
-export default function Chat({ historico }: { historico: MensagemChat[] }) {
+export default function Chat({ historico, saudacao }: { historico: MensagemChat[]; saudacao: string }) {
   const [mensagens, setMensagens] = useState<MensagemChat[]>(historico);
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -43,6 +44,14 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
   useEffect(() => {
     fim.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [mensagens, enviando]);
+
+  // O campo cresce conforme o texto (até umas 5 linhas)
+  useLayoutEffect(() => {
+    const el = campo.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+  }, [texto]);
 
   async function enviar(conteudo: string) {
     const mensagem = conteudo.trim();
@@ -78,23 +87,21 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
 
     setMensagens((m) => [...m, { id: crypto.randomUUID(), role: "assistant", content: resposta, humor }]);
     setEnviando(false);
-    campo.current?.focus();
   }
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex-1 space-y-3 px-4 py-4">
+      <div className="flex-1 space-y-4 px-4 pb-6 pt-4">
         {mensagens.length === 0 && (
-          <div className="mt-8 text-center text-slate-500 dark:text-slate-400">
-            <Mascote humor="acenando" tamanho={112} className="mx-auto mb-2" />
-            <p className="mb-4">Olá! Me conte um gasto, uma receita ou um compromisso.</p>
-            <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex animate-entrar flex-col items-center pt-10 text-center">
+            <Mascote humor="acenando" tamanho={128} />
+            <h2 className="mt-3 text-2xl font-bold tracking-tight">{saudacao}</h2>
+            <p className="mt-1 max-w-xs text-suave">
+              Me conte um gasto, uma receita ou um compromisso. Pode escrever ou falar, do seu jeito.
+            </p>
+            <div className="mt-6 flex max-w-sm flex-wrap justify-center gap-2">
               {SUGESTOES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => enviar(s)}
-                  className="rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
+                <button key={s} onClick={() => enviar(s)} className="chip hover:border-destaque/40">
                   {s}
                 </button>
               ))}
@@ -102,37 +109,37 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
           </div>
         )}
 
-        {mensagens.map((m, i) => (
-          <div key={m.id} className={`flex items-end gap-1.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            {m.role === "assistant" && (
+        {mensagens.map((m, i) =>
+          m.role === "user" ? (
+            <div key={m.id} className="flex animate-entrar justify-end pl-12">
+              <div className="whitespace-pre-wrap rounded-[22px] rounded-br-md bg-botao px-4 py-2.5 leading-relaxed text-white shadow-[0_6px_20px_-10px_var(--botao)]">
+                {m.content}
+              </div>
+            </div>
+          ) : (
+            <div key={m.id} className="flex animate-entrar items-end gap-2 pr-8">
               <Mascote
                 humor={m.humor ?? "feliz"}
-                tamanho={40}
+                tamanho={44}
                 // Só a última resposta fica animada; as antigas ficam paradas (mais leve)
                 animado={i === ultimaResposta}
-                className="-ml-1 mb-0.5 shrink-0"
+                className="-mb-1 -ml-1.5 shrink-0"
               />
-            )}
-            <div
-              className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 leading-relaxed ${
-                m.role === "user"
-                  ? "rounded-br-md bg-indigo-600 text-white"
-                  : "rounded-bl-md bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800"
-              }`}
-            >
-              {m.content}
+              <div className="vidro whitespace-pre-wrap rounded-[22px] rounded-bl-md px-4 py-2.5 leading-relaxed">
+                {m.content}
+              </div>
             </div>
-          </div>
-        ))}
+          ),
+        )}
 
         {enviando && (
-          <div className="flex items-end justify-start gap-1.5">
-            <Mascote humor="pensando" tamanho={40} className="-ml-1 mb-0.5 shrink-0" />
-            <div className="rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-              <span className="inline-flex gap-1">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+          <div className="flex animate-entrar items-end gap-2">
+            <Mascote humor="pensando" tamanho={44} className="-mb-1 -ml-1.5 shrink-0" />
+            <div className="vidro rounded-[22px] rounded-bl-md px-4 py-3.5">
+              <span className="inline-flex gap-1.5" aria-label="Pensando">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-suave/60 [animation-delay:-0.3s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-suave/60 [animation-delay:-0.15s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-suave/60" />
               </span>
             </div>
           </div>
@@ -140,6 +147,7 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
         <div ref={fim} />
       </div>
 
+      {/* Barra de escrever: uma "pílula" de vidro flutuando acima da navegação */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -147,28 +155,32 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
           if (voz.ouvindo) voz.cancelar();
           enviar(texto);
         }}
-        className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] border-t border-slate-200 bg-slate-50/95 px-3 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95"
+        className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 px-3 pb-3"
       >
         {voz.erro && (
-          <div className="mb-2 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
-            <p className="flex-1">{voz.erro}</p>
-            <button type="button" onClick={voz.limparErro} aria-label="Fechar aviso" className="font-semibold">
-              ✕
+          <div className="vidro mb-2 flex animate-entrar items-start gap-2 rounded-2xl px-3.5 py-2.5 text-sm">
+            <p className="flex-1 text-aviso">{voz.erro}</p>
+            <button type="button" onClick={voz.limparErro} aria-label="Fechar aviso" className="text-suave">
+              <IconeFechar className="h-4 w-4" />
             </button>
           </div>
         )}
         {voz.ouvindo && (
-          <div className="mb-2 flex items-center justify-between text-sm text-rose-600 dark:text-rose-400">
-            <span className="flex items-center gap-2">
+          <div className="mb-2 flex animate-entrar items-center justify-between px-2 text-sm">
+            <span className="flex items-center gap-2 font-medium text-gasto">
               <Mascote humor="espiando" tamanho={28} />
               Ouvindo… toque em ■ quando terminar
             </span>
-            <button type="button" onClick={cancelarVoz} className="text-slate-500 underline dark:text-slate-400">
+            <button type="button" onClick={cancelarVoz} className="font-medium text-suave underline-offset-2 hover:underline">
               Cancelar
             </button>
           </div>
         )}
-        <div className="flex items-end gap-2">
+        <div
+          className={`vidro-forte flex items-end gap-1.5 rounded-[26px] border p-1.5 shadow-[var(--sombra)] transition ${
+            voz.ouvindo ? "border-gasto/40 ring-4 ring-gasto/10" : "focus-within:border-destaque/40 focus-within:ring-4 focus-within:ring-destaque/10"
+          }`}
+        >
           <textarea
             ref={campo}
             value={texto}
@@ -181,8 +193,8 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
             }}
             rows={1}
             readOnly={voz.ouvindo}
-            placeholder={voz.ouvindo ? "Ouvindo..." : "Escreva ou toque no microfone"}
-            className="max-h-32 flex-1 resize-none rounded-2xl border border-slate-300 bg-white px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-900"
+            placeholder={voz.ouvindo ? "Pode falar..." : "Escreva ou toque no microfone"}
+            className="max-h-36 min-h-11 flex-1 resize-none bg-transparent px-3.5 py-2.5 leading-6 outline-none placeholder:text-suave/70"
           />
           <button
             type="button"
@@ -190,33 +202,26 @@ export default function Chat({ historico }: { historico: MensagemChat[] }) {
             disabled={enviando}
             aria-label={voz.ouvindo ? "Parar de ouvir" : "Falar"}
             aria-pressed={voz.ouvindo}
-            className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${
-              voz.ouvindo
-                ? "bg-rose-600 text-white"
-                : "bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800"
+            className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-full transition active:scale-95 disabled:opacity-40 ${
+              voz.ouvindo ? "bg-gasto text-white" : "text-suave hover:bg-superficie-2 hover:text-texto"
             } ${voz.suportado ? "" : "opacity-60"}`}
           >
-            {voz.ouvindo && <span className="absolute inset-0 animate-ping rounded-full bg-rose-500/40" />}
+            {voz.ouvindo && <span className="absolute inset-0 animate-ping rounded-full bg-gasto/30" />}
             {voz.ouvindo ? (
-              <svg viewBox="0 0 24 24" className="relative h-5 w-5" fill="currentColor" aria-hidden>
-                <rect x="6" y="6" width="12" height="12" rx="2" />
+              <svg viewBox="0 0 24 24" className="relative h-4 w-4" fill="currentColor" aria-hidden>
+                <rect x="5" y="5" width="14" height="14" rx="3" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                <rect x="9" y="3" width="6" height="11" rx="3" />
-                <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
-              </svg>
+              <IconeMicrofone className="h-[22px] w-[22px]" />
             )}
           </button>
           <button
             type="submit"
             disabled={enviando || !texto.trim()}
             aria-label="Enviar"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:opacity-40"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-botao text-white transition hover:bg-botao-hover active:scale-95 disabled:bg-superficie-2 disabled:text-suave/60"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
-              <path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z" />
-            </svg>
+            <IconeEnviar className="h-5 w-5" />
           </button>
         </div>
       </form>

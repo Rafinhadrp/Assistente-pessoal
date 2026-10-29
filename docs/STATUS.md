@@ -20,9 +20,9 @@ Este arquivo responde três perguntas: **o que já está pronto**, **o que está
 
 ---
 
-## 2. Feito, mas ainda **não publicado**
+## 2. Publicado agora: precisa da atualização do banco
 
-Está pronto no código e foi testado aqui, mas ainda não foi para o GitHub/Vercel. **Antes de publicar, você precisa rodar o `supabase/schema.sql` de novo** (explicado na seção 4).
+Já foi enviado para o GitHub/Vercel. **Para funcionar, rode o `supabase/schema.sql` de novo** (veja a seção 4). Até lá, as telas mostram o aviso "Falta atualizar o banco de dados" e a IA avisa quando não conseguir salvar algo.
 
 | Item | Como funciona | Testado |
 |---|---|---|
@@ -32,10 +32,9 @@ Está pronto no código e foi testado aqui, mas ainda não foi para o GitHub/Ver
 | **Visual novo: vidro suave** (glassmorphism) | Fundo com cores difusas que se mexem devagar, superfícies de vidro discretas, grão leve, nova fonte, ícones e navegação | ✅ Modo escuro conferido · ⏳ falta conferir o modo claro |
 | Telas refeitas | Chat (barra de escrever flutuante, saudação "Bom dia/Boa tarde"), Finanças (saldo, mês com setinhas, categorias em chips, lista por dia), Agenda, Login | ✅ |
 
-**Falta para publicar esta parte:**
-- [ ] Conferir as telas no **modo claro** e a janela de editar compromisso.
+**Falta nesta parte:**
 - [ ] Você rodar o `schema.sql` no Supabase.
-- [ ] Publicar (enviar para o GitHub; a Vercel atualiza sozinha).
+- [ ] Conferir as telas no **modo claro** e a janela de editar compromisso.
 
 ---
 
@@ -74,7 +73,7 @@ Está pronto no código e foi testado aqui, mas ainda não foi para o GitHub/Ver
 
 - **iPhone:** em algumas versões, o microfone não funciona dentro do app instalado, só no Safari.
 - **Microfone pedindo permissão toda vez:** escolha "Permitir ao usar o app" em vez de "Só desta vez".
-- **Excluir pelo chat:** a IA ainda não apaga nada. Para apagar, use o gesto de arrastar nas telas (depois que a seção 2 for publicada).
+- **Excluir pelo chat:** a IA ainda não apaga nada. Para apagar, use o gesto de arrastar nas telas.
 
 ---
 
@@ -84,8 +83,8 @@ Está pronto no código e foi testado aqui, mas ainda não foi para o GitHub/Ver
 app/(app)/page.tsx           Chat (tela principal)
 app/(app)/financas/          Finanças
 app/(app)/agenda/            Agenda (Próximos / Histórico)
-app/(app)/lixeira/           Lixeira (30 dias)            ← ainda não publicado
-app/(app)/acoes.ts           Editar, lixeira, restaurar   ← ainda não publicado
+app/(app)/lixeira/           Lixeira (30 dias)
+app/(app)/acoes.ts           Editar, lixeira, restaurar
 app/api/chat/route.ts        Conversa com a IA (ferramentas, mascote, histórico de ações)
 lib/ferramentas.ts           O que a IA consegue fazer no banco
 components/                  Peças das telas (chat, listas, mascote, logo, vidro)

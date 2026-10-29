@@ -88,3 +88,40 @@ export function inicioDoDiaISO(data: string): string {
 export function fimDoDiaISO(data: string): string {
   return new Date(`${data}T23:59:59.999${DESLOCAMENTO}`).toISOString();
 }
+
+// ISO -> "2026-11-05T14:00" no horário de SP (para campos de data e hora)
+export function paraHoraLocal(iso: string): string {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: FUSO,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(iso));
+  const p = (t: string) => partes.find((x) => x.type === t)?.value ?? "00";
+  return `${p("year")}-${p("month")}-${p("day")}T${p("hour")}:${p("minute")}`;
+}
+
+// "Hoje", "Ontem", "Amanhã" ou "qui., 5 de nov."
+export function rotuloDoDia(data: string): string {
+  const hoje = hojeSP();
+  if (data === hoje) return "Hoje";
+  if (data === somarDias(hoje, -1)) return "Ontem";
+  if (data === somarDias(hoje, 1)) return "Amanhã";
+  const d = new Date(`${data}T12:00:00Z`);
+  const texto = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "UTC",
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    ...(data.slice(0, 4) !== hoje.slice(0, 4) ? { year: "numeric" } : {}),
+  }).format(d);
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+// "14:00"
+export function horaSP(iso: string): string {
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: FUSO, hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+}

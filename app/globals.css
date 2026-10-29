@@ -1,17 +1,201 @@
 @import "tailwindcss";
 
+/* =====================================================================
+   Identidade visual do Assistente: vidro suave e orgânico
+   - Fundo com manchas de cor bem difusas que se mexem devagar
+   - Superfícies de vidro discretas (translúcidas, com desfoque leve)
+   - Grão sutil por cima de tudo, para não parecer "plástico"
+   Paleta derivada do mascote <R/>: azul #58a6ff, branco #e6edf3, #0d1117
+   Os nomes abaixo viram classes do Tailwind: bg-fundo, text-suave, etc.
+   ===================================================================== */
 :root {
-  color-scheme: light dark;
+  --fundo: #eef2f6;
+  --superficie: rgb(255 255 255 / 0.6);
+  --superficie-forte: rgb(255 255 255 / 0.88);
+  --superficie-2: rgb(15 23 42 / 0.05);
+  --borda: rgb(15 23 42 / 0.09);
+  --brilho: rgb(255 255 255 / 0.75);
+  --sombra: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 30px -14px rgb(15 23 42 / 0.18);
+  --texto: #1c2430;
+  --suave: #5b6675;
+  --destaque: #0a66d1;
+  --destaque-suave: rgb(10 102 209 / 0.1);
+  --botao: #1d6fdc;
+  --botao-hover: #185fc0;
+  --receita: #19803a;
+  --receita-suave: rgb(25 128 58 / 0.1);
+  --gasto: #c9343c;
+  --gasto-suave: rgb(201 52 60 / 0.1);
+  --aviso: #94680a;
+  --aviso-suave: rgb(212 160 23 / 0.14);
+  --mancha-1: #a9d0ff;
+  --mancha-2: #ffdcc2;
+  --mancha-3: #dccfff;
+  --grao: 0.05;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #0b0f14;
+    --superficie: rgb(24 30 38 / 0.55);
+    --superficie-forte: rgb(20 25 32 / 0.9);
+    --superficie-2: rgb(255 255 255 / 0.05);
+    --borda: rgb(255 255 255 / 0.08);
+    --brilho: rgb(255 255 255 / 0.06);
+    --sombra: 0 1px 2px rgb(0 0 0 / 0.3), 0 14px 34px -18px rgb(0 0 0 / 0.7);
+    --texto: #e6edf3;
+    --suave: #8f99a5;
+    --destaque: #6cb2ff;
+    --destaque-suave: rgb(88 166 255 / 0.14);
+    --botao: #2f7de1;
+    --botao-hover: #4a8fe8;
+    --receita: #4cc265;
+    --receita-suave: rgb(76 194 101 / 0.13);
+    --gasto: #f2645c;
+    --gasto-suave: rgb(242 100 92 / 0.13);
+    --aviso: #dcaa3a;
+    --aviso-suave: rgb(220 170 58 / 0.13);
+    --mancha-1: #1b4a8a;
+    --mancha-2: #3b2b5e;
+    --mancha-3: #0f4a48;
+    --grao: 0.07;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-fundo: var(--fundo);
+  --color-superficie: var(--superficie);
+  --color-superficie-forte: var(--superficie-forte);
+  --color-superficie-2: var(--superficie-2);
+  --color-borda: var(--borda);
+  --color-texto: var(--texto);
+  --color-suave: var(--suave);
+  --color-destaque: var(--destaque);
+  --color-destaque-suave: var(--destaque-suave);
+  --color-botao: var(--botao);
+  --color-botao-hover: var(--botao-hover);
+  --color-receita: var(--receita);
+  --color-receita-suave: var(--receita-suave);
+  --color-gasto: var(--gasto);
+  --color-gasto-suave: var(--gasto-suave);
+  --color-aviso: var(--aviso);
+  --color-aviso-suave: var(--aviso-suave);
+  --font-sans: var(--fonte-texto), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-pixel: var(--fonte-pixel), ui-monospace, monospace;
+
+  --animate-subir: subir 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-surgir: surgir 220ms ease-out;
+  --animate-entrar: entrar 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-flutuar: flutuar 38s ease-in-out infinite alternate;
+
+  @keyframes subir {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  @keyframes surgir {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes entrar {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes flutuar {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(6vw, 4vh, 0) scale(1.08); }
+    100% { transform: translate3d(-4vw, 8vh, 0) scale(0.96); }
+  }
 }
 
 html,
 body {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  background: var(--fundo);
+  color: var(--texto);
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   /* Desliga o "puxar para atualizar" do navegador: o app tem o seu próprio */
   overscroll-behavior-y: none;
+}
+
+/* Números alinhados (valores em R$) */
+.numeros {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Some com a barra de rolagem nas listas horizontais (chips) */
+.sem-barra {
+  scrollbar-width: none;
+}
+.sem-barra::-webkit-scrollbar {
+  display: none;
+}
+
+/* Grão: textura de ruído bem leve por cima do fundo (aspecto de material real) */
+.grao {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: var(--grao);
+  mix-blend-mode: overlay;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Peças reutilizáveis
+   --------------------------------------------------------------------- */
+/* Vidro: translúcido, desfoque leve, borda fina e um brilho no topo */
+@utility vidro {
+  background: var(--superficie);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid var(--borda);
+  box-shadow: inset 0 1px 0 var(--brilho), var(--sombra);
+}
+
+/* Vidro mais opaco: cabeçalho, barra de navegação e janelas */
+@utility vidro-forte {
+  background: var(--superficie-forte);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-color: var(--borda);
+}
+
+@layer components {
+  .cartao {
+    @apply vidro rounded-3xl;
+  }
+  .campo {
+    @apply w-full rounded-2xl border border-borda bg-superficie-2 px-4 py-3 text-base text-texto outline-none transition placeholder:text-suave/70 focus:border-destaque/50 focus:bg-superficie focus:ring-4 focus:ring-destaque/10;
+  }
+  .rotulo {
+    @apply mb-1.5 block text-[13px] font-medium text-suave;
+  }
+  .botao-primario {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-botao px-4 py-3 font-semibold text-white shadow-[0_6px_20px_-8px_var(--botao)] transition hover:bg-botao-hover active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
+  }
+  .botao-secundario {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-borda bg-superficie-2 px-4 py-3 font-semibold text-texto transition hover:bg-superficie active:scale-[0.98] disabled:opacity-50;
+  }
+  .botao-perigo {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-gasto px-4 py-3 font-semibold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50;
+  }
+  .chip {
+    @apply inline-flex shrink-0 items-center gap-1.5 rounded-full border border-borda bg-superficie px-3.5 py-1.5 text-sm font-medium text-suave backdrop-blur-md transition hover:text-texto;
+  }
+  .chip-ativo {
+    @apply border-transparent bg-texto text-fundo hover:text-fundo;
+  }
 }

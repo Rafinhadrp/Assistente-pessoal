@@ -28,9 +28,9 @@ export default function LogoAssistente({
         />
       </div>
       {comNome && (
-        <p className="mt-1 text-2xl font-bold tracking-tight">
+        <p className="mt-2 flex items-baseline gap-2 text-[1.7rem] font-bold tracking-tight">
           Assistente
-          <span className="ml-1.5 font-mono text-base font-semibold text-[#58a6ff]">&lt;R/&gt;</span>
+          <span className="font-pixel text-sm font-normal text-destaque">&lt;R/&gt;</span>
         </p>
       )}
     </div>

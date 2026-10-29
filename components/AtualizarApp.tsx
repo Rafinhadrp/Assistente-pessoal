@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Mascote from "./Mascote";
+import { IconeAtualizar } from "./ui/Icones";
 
 const LIMITE = 80; // quanto puxar (px) para atualizar
 const MAXIMO = 120; // até onde a bolinha desce
@@ -111,7 +112,7 @@ export default function AtualizarApp({ versao }: { versao: string }) {
         }}
       >
         <div
-          className="grid h-12 w-12 place-items-center rounded-full bg-white shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
+          className="vidro-forte grid h-12 w-12 place-items-center rounded-full border shadow-lg"
           style={{ transform: `scale(${0.6 + progresso * 0.4})` }}
         >
           {/* O mascote "carregando" aparece quando já dá para soltar */}
@@ -123,9 +124,10 @@ export default function AtualizarApp({ versao }: { versao: string }) {
         <div className="fixed inset-x-0 top-0 z-40 flex justify-center px-4 pt-[calc(0.5rem+env(safe-area-inset-top))]">
           <button
             onClick={recarregar}
-            className="flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-lg"
+            className="vidro-forte flex animate-entrar items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-4 text-sm font-medium shadow-lg"
           >
-            Nova versão disponível · <span className="underline">Atualizar</span>
+            <Mascote humor="chamando" tamanho={28} />
+            Tem novidade no app · <span className="font-semibold text-destaque">Atualizar</span>
           </button>
         </div>
       )}
@@ -145,19 +147,9 @@ export function BotaoAtualizar() {
         setGirando(true);
         recarregar();
       }}
-      className="grid h-9 w-9 place-items-center rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+      className="grid h-10 w-10 place-items-center rounded-full text-suave transition hover:bg-superficie-2 hover:text-texto active:scale-95"
     >
-      <svg
-        viewBox="0 0 24 24"
-        className={`h-5 w-5 ${girando ? "animate-spin" : ""}`}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      >
-        <path d="M20 12a8 8 0 1 1-2.34-5.66" />
-        <path d="M20 4v4h-4" />
-      </svg>
+      <IconeAtualizar className={`h-5 w-5 ${girando ? "animate-spin" : ""}`} />
     </button>
   );
 }

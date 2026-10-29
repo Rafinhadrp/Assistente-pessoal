@@ -209,6 +209,14 @@ export async function executarFerramenta(
     }
   } catch (e) {
     console.error(`Erro na ferramenta ${nome}:`, e);
+    // Código mais novo que o banco: faltou rodar o supabase/schema.sql
+    const codigo = (e as { code?: string } | null)?.code;
+    if (codigo === "42703" || codigo === "PGRST202") {
+      return {
+        ok: false,
+        erro: "O banco de dados precisa de uma atualização. Diga ao usuário para colar o arquivo supabase/schema.sql no SQL Editor do Supabase e clicar em Run.",
+      };
+    }
     return { ok: false, erro: "Erro inesperado ao acessar o banco de dados." };
   }
 }
@@ -236,6 +244,7 @@ async function registrarLancamento(
     const { data: recentes, error: erroRecentes } = await supabase
       .from("transactions")
       .select("id, description, date, created_at")
+      .is("deleted_at", null)
       .eq("type", tipo)
       .eq("amount_cents", centavos)
       .eq("date", data)
@@ -322,6 +331,7 @@ async function consultarFinancas(supabase: SupabaseClient, entrada: Entrada): Pr
   let consulta = supabase
     .from("transactions")
     .select("type, amount_cents, category, description, date")
+    .is("deleted_at", null)
     .order("date", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(30);
@@ -384,6 +394,7 @@ async function criarCompromisso(supabase: SupabaseClient, entrada: Entrada): Pro
   const { data: mesmoHorario, error: erroBusca } = await supabase
     .from("appointments")
     .select("id, title, category, starts_at, status, notes")
+    .is("deleted_at", null)
     .eq("starts_at", inicio)
     .neq("status", "archived");
   if (erroBusca) throw erroBusca;
@@ -417,6 +428,7 @@ async function listarCompromissos(supabase: SupabaseClient, entrada: Entrada): P
   let consulta = supabase
     .from("appointments")
     .select("id, title, category, starts_at, status, notes")
+    .is("deleted_at", null)
     .order("starts_at", { ascending: periodo !== "passados" })
     .limit(30);
 
@@ -486,6 +498,7 @@ async function atualizarCompromisso(supabase: SupabaseClient, entrada: Entrada):
     .from("appointments")
     .update(mudancas)
     .eq("id", id)
+    .is("deleted_at", null)
     .select("id, title, category, starts_at, status, notes")
     .maybeSingle();
   if (error) throw error;

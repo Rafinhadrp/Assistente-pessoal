@@ -1,7 +1,8 @@
 -- =====================================================================
--- Assistente Pessoal - estrutura do banco (Fase 1)
+-- Assistente Pessoal - estrutura do banco
 -- Cole TODO este arquivo no Supabase: SQL Editor > New query > Run.
--- Pode rodar de novo sem problema (ele não apaga seus dados).
+-- Pode rodar de novo sempre que o app for atualizado: ele não apaga seus
+-- dados, só cria o que estiver faltando.
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
@@ -71,6 +72,25 @@ create index if not exists messages_user_created_idx
   on public.messages (user_id, created_at desc);
 
 -- ---------------------------------------------------------------------
+-- Atualizações (para quem já tinha o banco de uma versão anterior)
+-- ---------------------------------------------------------------------
+
+-- O histórico do chat guarda o que o sistema realmente fez em cada resposta
+-- (ex: "compromisso criado"), para a IA não achar que esqueceu e duplicar.
+alter table public.messages add column if not exists actions text;
+
+-- Lixeira e edição manual:
+--   deleted_at = quando foi para a lixeira (vazio = não está na lixeira).
+--                Depois de 30 dias na lixeira, é apagado de vez.
+--   edited_at  = quando VOCÊ editou pelo app (mostra "editado por você").
+alter table public.transactions add column if not exists deleted_at timestamptz;
+alter table public.transactions add column if not exists edited_at  timestamptz;
+alter table public.appointments add column if not exists deleted_at timestamptz;
+alter table public.appointments add column if not exists edited_at  timestamptz;
+alter table public.notes        add column if not exists deleted_at timestamptz;
+alter table public.notes        add column if not exists edited_at  timestamptz;
+
+-- ---------------------------------------------------------------------
 -- Segurança (RLS): cada usuário só enxerga e mexe nos PRÓPRIOS dados
 -- ---------------------------------------------------------------------
 alter table public.transactions enable row level security;
@@ -127,6 +147,7 @@ as $$
      - coalesce(sum(amount_cents) filter (where type = 'expense'), 0))::bigint
   from public.transactions
   where user_id = (select auth.uid())
+    and deleted_at is null -- o que está na lixeira não conta no saldo
     and (p_start is null or date >= p_start)
     and (p_end is null or date <= p_end)
     and (p_category is null or lower(category) = lower(p_category));
@@ -135,9 +156,23 @@ $$;
 revoke all on function public.finance_summary(date, date, text) from public, anon;
 grant execute on function public.finance_summary(date, date, text) to authenticated;
 
--- =====================================================================
--- Atualização (Fase 2.1): o histórico do chat passa a guardar o que o
--- sistema realmente fez em cada resposta (ex: "compromisso criado").
--- Assim a IA não acha que esqueceu de salvar e não cria duplicado.
--- =====================================================================
-alter table public.messages add column if not exists actions text;
+-- ---------------------------------------------------------------------
+-- Lixeira: apaga de vez o que está lá há mais de 30 dias.
+-- O app chama isso sozinho quando você abre as telas.
+-- ---------------------------------------------------------------------
+create or replace function public.limpar_lixeira()
+returns void
+language sql
+security invoker
+set search_path = public
+as $$
+  delete from public.transactions
+   where user_id = (select auth.uid()) and deleted_at < now() - interval '30 days';
+  delete from public.appointments
+   where user_id = (select auth.uid()) and deleted_at < now() - interval '30 days';
+  delete from public.notes
+   where user_id = (select auth.uid()) and deleted_at < now() - interval '30 days';
+$$;
+
+revoke all on function public.limpar_lixeira() from public, anon;
+grant execute on function public.limpar_lixeira() to authenticated;
