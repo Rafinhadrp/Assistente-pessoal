@@ -20,7 +20,7 @@ export function useAviso() {
   }, []);
 
   const elemento = aviso ? (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
       <div
         role="status"
         className="pointer-events-auto flex animate-entrar items-center gap-4 rounded-2xl bg-[#1c2430]/92 px-4 py-3 text-sm text-white shadow-xl backdrop-blur-xl dark:bg-[#e6edf3]/92 dark:text-[#0b0f14]"

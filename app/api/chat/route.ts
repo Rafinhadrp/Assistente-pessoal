@@ -188,6 +188,7 @@ export async function POST(request: Request) {
   let humorEscolhido: string | null = null;
   const acoes: string[] = [];
   let buscas = 0; // quantas buscas na internet esta resposta usou (custo extra)
+  let salvou = false; // algo foi gravado de verdade (o mascote comemora na tela)
   const fontes = new Map<string, string>(); // url -> título
   let comBusca = BUSCA_LIGADA;
   try {
@@ -261,6 +262,15 @@ export async function POST(request: Request) {
           chamada.name,
           (chamada.input ?? {}) as Record<string, unknown>,
         );
+        const dados = (resultado.ok ? resultado.dados : null) as Record<string, unknown> | null;
+        if (
+          resultado.ok &&
+          /^(registrar_|criar_|atualizar_)/.test(chamada.name) &&
+          !dados?.ja_existia &&
+          !dados?.nao_registrado
+        ) {
+          salvou = true;
+        }
         acoes.push(
           resumoDaAcao(chamada.name, chamada.input, resultado.ok ? resultado.dados : resultado.erro, resultado.ok),
         );
@@ -312,5 +322,5 @@ export async function POST(request: Request) {
     const { error } = await supabase.from("messages").insert(linha);
     if (!error) break;
   }
-  return NextResponse.json({ resposta: texto, humor, buscas, fontes: listaFontes });
+  return NextResponse.json({ resposta: texto, humor, buscas, fontes: listaFontes, salvou });
 }

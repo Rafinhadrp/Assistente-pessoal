@@ -1,6 +1,6 @@
 # Situação do projeto — Assistente Pessoal
 
-_Atualizado em 29/10/2026._
+_Atualizado em 30/10/2026._
 
 Este arquivo responde três perguntas: **o que já está pronto**, **o que está feito mas ainda não foi publicado** e **o que falta fazer**.
 
@@ -17,6 +17,8 @@ Este arquivo responde três perguntas: **o que já está pronto**, **o que está
 | Atualizar o app | ✅ Puxar a tela para baixo, botão ↻ e aviso "Nova versão disponível" |
 | Mascote `<R/>` | ✅ Aparece ao lado das respostas, e a IA escolhe a carinha de cada resposta |
 | Logo do Assistente | ✅ Mascote + balão de conversa no login e no ícone da tela de início |
+| **Transcrição com Deepgram** | ✅ Código pronto: grava, mostra a onda da voz e transcreve ao tocar no ■ (precisa da chave `DEEPGRAM_API_KEY`) |
+| **Redesign premium** | ✅ Azul-marinho com vidro, navegação flutuante, mascote animado com o pacote novo (acenando, parado, pensando, comemorando, erro, desconfiado, chamando), painel do mascote em Finanças e Agenda, modo claro conferido |
 | **Fase 5 – Busca na internet** | ✅ A IA pesquisa quando precisa de informação atual (clima, notícias, lojas, preços). Embaixo de cada resposta: **🌐 pesquisou na internet** (teve custo extra; toque para ver as fontes) ou **✓ sem busca** (sem custo extra). No máximo 3 buscas por resposta |
 
 ---
@@ -41,14 +43,12 @@ Já foi enviado para o GitHub/Vercel. **Para funcionar, rode o `supabase/schema.
 
 ## 3. O que falta fazer (próximas etapas)
 
-### Aguardando sua decisão
-- **Transcrição de voz melhor.** Hoje o app usa o reconhecimento do próprio celular (Google no Android, Siri no iPhone). Opções melhores, todas pagas e todas exigindo uma chave nova:
-  - **OpenAI (gpt-4o-mini-transcribe / Whisper)** — minha recomendação: ótimo em português e muito barato (centavos por hora de áudio; confirme o preço atual no site da OpenAI).
-  - **Google Cloud Speech-to-Text** — bom, mas a configuração é mais trabalhosa.
-  - **Deepgram / ElevenLabs** — também bons.
-  - Diferença na prática: o texto aparece **depois** que você para de falar, em 1 ou 2 segundos, e não enquanto você fala. Dá para combinar os dois: o texto do celular aparece ao vivo e é trocado pela versão melhor no final.
-  - ❓ **Preciso do seu "ok"**, porque isso muda a stack e tem custo.
+### Aguardando você
+- **Chave do Deepgram** (veja a seção 4). O código já está pronto; sem a chave, o microfone usa o ditado do próprio celular.
 - **Ramo `main` no GitHub** (opcional): hoje a Vercel publica a partir do ramo `claude/new-session-pvrayw`. Funciona normalmente.
+
+### Ideias para depois
+- Seletora de semana na Agenda (D S T Q Q S S), como na prévia de design. Seria uma função nova (filtrar por dia).
 
 ### Fases que faltam (do plano original)
 - [ ] **Fase 3 – Voz de saída:** o assistente fala a resposta em voz alta, com botão de liga/desliga.
@@ -67,6 +67,7 @@ Já foi enviado para o GitHub/Vercel. **Para funcionar, rode o `supabase/schema.
   - a coluna que guarda as buscas e as fontes de cada resposta (o selo 🌐 / ✓ continua aparecendo depois que você recarrega).
 - [ ] **(Opcional) Colocar sua cidade** na Vercel: **Settings → Environment Variables**, variável `CIDADE` (ex: `Campinas`), e depois **Redeploy**. Assim "como está o clima hoje?" já sabe onde você está.
 - [ ] **Se nunca aparecer 🌐:** a busca na internet pode estar desligada na sua conta da Anthropic. Em console.anthropic.com, procure nas configurações da organização a opção de **web search** e ligue. Enquanto estiver desligada, o app continua funcionando normalmente, só que sem buscar.
+- [ ] **Ligar o Deepgram:** crie conta em deepgram.com, gere uma **API Key** e coloque na Vercel em **Settings → Environment Variables** como `DEEPGRAM_API_KEY`. Depois faça **Redeploy**. Teste o microfone: deve aparecer a onda da voz e "Gravando · 0:03".
 - [ ] **Desligar novos cadastros** no Supabase depois de criar sua conta: **Authentication → Sign In / Providers → "Allow new users to sign up"** desligado.
 - [ ] **Testar o microfone no seu celular** várias vezes seguidas, sem recarregar. Se falhar, me diga o modelo do celular e se usa o app instalado ou o navegador.
 
@@ -93,5 +94,7 @@ lib/ferramentas.ts           O que a IA consegue fazer no banco
 components/                  Peças das telas (chat, listas, mascote, logo, vidro)
 supabase/schema.sql          Banco de dados (rodar de novo a cada atualização)
 docs/PUBLICAR.md             Como publicar e instalar no celular
-public/mascote/              Imagens do mascote <R/>
+public/mascote/              Imagens do mascote <R/> (svg/png originais + sprites/ animados do pacote novo)
+components/MascoteAnimado.tsx Animações do mascote (tiras de quadros)
+app/api/transcrever/         Transcrição com Deepgram (a chave fica só no servidor)
 ```

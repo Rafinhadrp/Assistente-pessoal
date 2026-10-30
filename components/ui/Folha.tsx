@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import MascoteAnimado from "../MascoteAnimado";
 import { IconeFechar } from "./Icones";
 
 let janelasAbertas = 0;
@@ -86,9 +87,14 @@ export function Confirmar({
 }) {
   return (
     <Folha aberta={aberta} aoFechar={aoCancelar} titulo={titulo}>
+      {perigoso && (
+        <div className="mb-3 flex justify-center">
+          <MascoteAnimado animacao="desconfiado" tamanho={76} rotulo="Mascote desconfiado" />
+        </div>
+      )}
       <div className="text-sm leading-relaxed text-suave">{mensagem}</div>
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        <button type="button" onClick={aoCancelar} className="botao-secundario">
+      <div className="mt-5 grid grid-cols-[auto_1fr] gap-2 [&>button]:whitespace-nowrap">
+        <button type="button" onClick={aoCancelar} className="botao-secundario px-5">
           Cancelar
         </button>
         <button

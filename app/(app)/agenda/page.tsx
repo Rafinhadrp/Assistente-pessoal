@@ -2,9 +2,10 @@ import Link from "next/link";
 import AvisoBanco, { bancoDesatualizado } from "@/components/AvisoBanco";
 import ListaCompromissos, { type Compromisso } from "@/components/ListaCompromissos";
 import Mascote from "@/components/Mascote";
+import MascoteAnimado from "@/components/MascoteAnimado";
 import Cabecalho, { BotaoIcone } from "@/components/ui/Cabecalho";
 import { IconeLixeira } from "@/components/ui/Icones";
-import { hojeSP, inicioDoDiaISO } from "@/lib/datas";
+import { dataSP, horaSP, hojeSP, inicioDoDiaISO, rotuloDoDia } from "@/lib/datas";
 import { criarClienteServidor } from "@/lib/supabase/server";
 
 export default async function PaginaAgenda({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
@@ -34,10 +35,7 @@ export default async function PaginaAgenda({ searchParams }: { searchParams: Pro
   const compromissos = (data ?? []) as Compromisso[];
   const proximo = !historico ? compromissos[0] : undefined;
 
-  const aba_ = (ativa: boolean) =>
-    `flex-1 rounded-xl py-2 text-center text-sm font-semibold transition ${
-      ativa ? "bg-superficie-forte text-texto shadow-sm" : "text-suave hover:text-texto"
-    }`;
+  const aba_ = (ativa: boolean) => `aba ${ativa ? "aba-ativa" : ""}`;
 
   return (
     <>
@@ -86,9 +84,17 @@ export default async function PaginaAgenda({ searchParams }: { searchParams: Pro
         ) : (
           <>
             {proximo && (
-              <p className="px-1 text-sm text-suave">
-                Próximo: <span className="font-semibold text-texto">{proximo.title}</span>
-              </p>
+              // Painel do mascote com o próximo compromisso
+              <section className="cartao flex animate-entrar items-center gap-3 p-3.5 pr-4">
+                <MascoteAnimado animacao="parado" tamanho={64} rotulo="Mascote" />
+                <div className="vidro-forte relative min-w-0 flex-1 rounded-2xl rounded-bl-md border px-3.5 py-2.5">
+                  <p className="text-xs font-medium text-suave">Seu próximo compromisso</p>
+                  <p className="truncate font-semibold">{proximo.title}</p>
+                  <p className="text-sm text-destaque">
+                    {rotuloDoDia(dataSP(new Date(proximo.starts_at)))} às {horaSP(proximo.starts_at)}
+                  </p>
+                </div>
+              </section>
             )}
             <ListaCompromissos compromissos={compromissos} agruparPorCategoria={!historico} />
           </>

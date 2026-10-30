@@ -28,7 +28,7 @@ export default function NavInferior() {
               >
                 <span
                   className={`grid h-8 w-14 place-items-center rounded-full transition ${
-                    ativa ? "bg-destaque-suave" : "group-active:bg-superficie-2"
+                    ativa ? "" : "group-active:bg-superficie-2"
                   }`}
                 >
                   <Icone className="h-[22px] w-[22px]" />

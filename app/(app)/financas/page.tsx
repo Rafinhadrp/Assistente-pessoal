@@ -2,6 +2,7 @@ import Link from "next/link";
 import AvisoBanco, { bancoDesatualizado } from "@/components/AvisoBanco";
 import ListaLancamentos, { type Lancamento } from "@/components/ListaLancamentos";
 import Mascote from "@/components/Mascote";
+import MascoteAnimado from "@/components/MascoteAnimado";
 import Cabecalho, { BotaoIcone } from "@/components/ui/Cabecalho";
 import { IconeAvancar, IconeLixeira, IconeSetaBaixo, IconeSetaCima, IconeVoltar } from "@/components/ui/Icones";
 import { hojeSP, limitesDoMes, somarDias } from "@/lib/datas";
@@ -61,6 +62,15 @@ export default async function PaginaFinancas({
   const receitas = Number(doMes.data?.income_cents ?? 0);
   const gastos = Number(doMes.data?.expense_cents ?? 0);
   const lancamentos = (lista.data ?? []) as Lancamento[];
+  // Comentário do mascote: decidido pelo código comparando os números (nunca pela IA)
+  const comentario =
+    saldoAtual < 0
+      ? { texto: "Saldo no vermelho. Vamos com calma?", tom: "text-gasto" }
+      : gastos > receitas
+        ? { texto: "Gastos passaram as entradas este mês.", tom: "text-aviso" }
+        : receitas > 0 || gastos > 0
+          ? { texto: "Tudo certo por aqui!", tom: "text-receita" }
+          : { texto: "Me conta seus gastos no chat.", tom: "text-suave" };
   const listaCategorias = [...new Set((categorias.data ?? []).map((c) => c.category as string))].sort();
 
   return (
@@ -83,6 +93,19 @@ export default async function PaginaFinancas({
             className="absolute -right-16 -top-20 h-56 w-56 rounded-full opacity-50 blur-3xl"
             style={{ background: "var(--mancha-1)" }}
           />
+          {/* Mascote contextual no canto, sem cobrir os valores */}
+          <div className="absolute right-3 top-3 flex items-start gap-1">
+            <span
+              className={`vidro-forte mt-1 max-w-[8.5rem] rounded-2xl rounded-tr-md border px-2.5 py-1.5 text-[11px] font-medium leading-tight ${comentario.tom}`}
+            >
+              {comentario.texto}
+            </span>
+            {saldoAtual < 0 ? (
+              <Mascote humor="chorando" tamanho={54} />
+            ) : (
+              <MascoteAnimado animacao="parado" tamanho={56} rotulo="Mascote" />
+            )}
+          </div>
           <div className="relative">
             <p className="text-sm font-medium text-suave">Saldo atual</p>
             <p

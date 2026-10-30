@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Mascote from "./Mascote";
+import MascoteAnimado from "./MascoteAnimado";
 import { IconeAtualizar } from "./ui/Icones";
 
 const LIMITE = 80; // quanto puxar (px) para atualizar
@@ -126,7 +127,7 @@ export default function AtualizarApp({ versao }: { versao: string }) {
             onClick={recarregar}
             className="vidro-forte flex animate-entrar items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-4 text-sm font-medium shadow-lg"
           >
-            <Mascote humor="chamando" tamanho={28} />
+            <MascoteAnimado animacao="chamando" tamanho={28} />
             Tem novidade no app · <span className="font-semibold text-destaque">Atualizar</span>
           </button>
         </div>
