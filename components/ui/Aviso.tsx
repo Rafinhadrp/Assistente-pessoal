@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Estado = { mensagem: string; acao?: { rotulo: string; fazer: () => void } } | null;
 
@@ -19,11 +20,11 @@ export function useAviso() {
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
-  const elemento = aviso ? (
+  const conteudo = aviso ? (
     <div className="pointer-events-none fixed inset-x-0 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
       <div
         role="status"
-        className="pointer-events-auto flex animate-entrar items-center gap-4 rounded-2xl bg-[#1c2430]/92 px-4 py-3 text-sm text-white shadow-xl backdrop-blur-xl dark:bg-[#e6edf3]/92 dark:text-[#0b0f14]"
+        className="pointer-events-auto flex animate-entrar items-center gap-4 vidro-forte rounded-full border px-5 py-3 text-sm text-texto shadow-xl"
       >
         <span>{aviso.mensagem}</span>
         {aviso.acao && (
@@ -33,7 +34,7 @@ export function useAviso() {
               aviso.acao!.fazer();
               setAviso(null);
             }}
-            className="font-semibold text-[#8cc4ff] dark:text-[#0a66d1]"
+            className="font-semibold text-destaque"
           >
             {aviso.acao.rotulo}
           </button>
@@ -41,6 +42,8 @@ export function useAviso() {
       </div>
     </div>
   ) : null;
+  // Desenhado no <body> para nunca ficar preso dentro de outro elemento
+  const elemento = conteudo && typeof document !== "undefined" ? createPortal(conteudo, document.body) : null;
 
   return { mostrar, elemento };
 }

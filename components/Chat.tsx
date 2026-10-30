@@ -22,8 +22,18 @@ export type MensagemChat = {
 
 const SUGESTOES = ["Gastei 35 no mercado", "Quanto ainda tenho?", "Tenho médico dia 5 às 14h", "O que tenho essa semana?"];
 
-export default function Chat({ historico, saudacao }: { historico: MensagemChat[]; saudacao: string }) {
+export default function Chat({
+  historico,
+  saudacao,
+  conversa,
+}: {
+  historico: MensagemChat[];
+  saudacao: string;
+  conversa: string | null;
+}) {
   const [mensagens, setMensagens] = useState<MensagemChat[]>(historico);
+  // Conversa desta tela (criada pelo servidor na primeira mensagem, se for nova)
+  const conversaAtual = useRef(conversa);
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const fim = useRef<HTMLDivElement>(null);
@@ -111,7 +121,7 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
       const r = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mensagem }),
+        body: JSON.stringify({ mensagem, conversa: conversaAtual.current }),
       });
       const json = await r.json().catch(() => ({}));
       if (r.status === 401) {
@@ -124,6 +134,12 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
         buscas = json.buscas ?? 0;
         fontes = json.fontes ?? [];
         salvou = Boolean(json.salvou);
+        // Conversa nova: o endereço passa a apontar para ela (sem recarregar a tela)
+        if (json.conversa && json.conversa !== conversaAtual.current) {
+          conversaAtual.current = json.conversa;
+          window.history.replaceState(null, "", `/?c=${json.conversa}`);
+          window.dispatchEvent(new Event("conversa-criada"));
+        }
       } else {
         resposta = json.erro ?? "Algo deu errado.";
       }

@@ -5,6 +5,7 @@ import { formatarReais } from "@/lib/dinheiro";
 import { agoraPorExtenso, formatarData, formatarDataHora, hojeSP, inicioDoDiaISO } from "@/lib/datas";
 import { executarFerramenta, ferramentas } from "@/lib/ferramentas";
 import { HUMORES, separarHumor } from "@/lib/humor";
+import { carregarPerfil, idade } from "@/lib/perfil";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -128,6 +129,32 @@ function resumoDaAcao(nome: string, entrada: unknown, saida: unknown, ok: boolea
   return `${nome}: ${json(saida)}`;
 }
 
+// Título da conversa: o começo da primeira mensagem (feito pelo código, sem custo de IA)
+function tituloDaConversa(mensagem: string): string {
+  const limpo = mensagem.replace(/\s+/g, " ").trim();
+  if (limpo.length <= 42) return limpo.charAt(0).toUpperCase() + limpo.slice(1);
+  const corte = limpo.slice(0, 42);
+  const fim = corte.lastIndexOf(" ");
+  const titulo = (fim > 20 ? corte.slice(0, fim) : corte) + "…";
+  return titulo.charAt(0).toUpperCase() + titulo.slice(1);
+}
+
+// Usa a conversa pedida (se existir) ou cria uma nova.
+// Devolve null se o banco ainda não tiver a tabela de conversas (funciona como antes).
+async function prepararConversa(supabase: SupabaseClient, pedida: string | null, mensagem: string) {
+  if (pedida) {
+    const { data, error } = await supabase.from("conversations").select("id").eq("id", pedida).maybeSingle();
+    if (error) return null;
+    if (data) return data.id as string;
+  }
+  const { data, error } = await supabase
+    .from("conversations")
+    .insert({ title: tituloDaConversa(mensagem) })
+    .select("id")
+    .single();
+  return error ? null : (data.id as string);
+}
+
 // Junta a resposta com o registro do que o sistema fez (só a IA vê isso)
 function conteudoComAcoes(m: Linha): string {
   return m.actions ? `${m.content}\n\n[Ações executadas pelo sistema: ${m.actions}]` : m.content;
@@ -152,14 +179,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ erro: "Mensagem muito longa." }, { status: 400 });
   }
 
-  // Histórico recente do chat, do mais antigo para o mais novo
-  const buscarHistorico = (colunas: string) =>
-    supabase
-      .from("messages")
-      .select(colunas)
-      .order("created_at", { ascending: false })
-      .limit(MENSAGENS_DE_CONTEXTO)
-      .returns<Linha[]>();
+  const pedida = typeof corpo?.conversa === "string" && /^[0-9a-f-]{36}$/i.test(corpo.conversa) ? corpo.conversa : null;
+  const conversa = await prepararConversa(supabase, pedida, mensagem);
+  const daConversa = conversa ? { conversation_id: conversa } : {};
+
+  // Histórico recente desta conversa, do mais antigo para o mais novo
+  const buscarHistorico = (colunas: string) => {
+    let q = supabase.from("messages").select(colunas);
+    if (conversa) q = q.eq("conversation_id", conversa);
+    return q.order("created_at", { ascending: false }).limit(MENSAGENS_DE_CONTEXTO).returns<Linha[]>();
+  };
   let { data: historico, error: erroHistorico } = await buscarHistorico("role, content, actions");
   if (erroHistorico) {
     // Coluna "actions" ainda não criada no banco: segue sem ela
@@ -168,19 +197,32 @@ export async function POST(request: Request) {
   const anteriores = (historico ?? []).reverse();
   while (anteriores.length && anteriores[0].role !== "user") anteriores.shift();
 
-  await supabase.from("messages").insert({ role: "user", content: mensagem });
+  await supabase.from("messages").insert({ role: "user", content: mensagem, ...daConversa });
 
   const mensagens: Anthropic.Beta.BetaMessageParam[] = [
     ...anteriores.map((m) => ({ role: m.role, content: m.role === "assistant" ? conteudoComAcoes(m) : m.content })),
     { role: "user", content: mensagem },
   ];
 
+  // Perfil: nome, cidade e algumas informações para o assistente ser mais pessoal
+  const perfil = await carregarPerfil(supabase, auth.user.email ?? "");
+  const cidade = [perfil.cidade, perfil.estado].filter(Boolean).join(" - ") || CIDADE;
+  const anos = idade(perfil.nascimento);
+  const sobreUsuario = [
+    perfil.nome || perfil.nomeCompleto ? `Chame o usuário de ${perfil.nome || perfil.nomeCompleto?.split(" ")[0]}.` : "",
+    anos !== null ? `Ele tem ${anos} anos.` : "",
+    perfil.profissao ? `Profissão: ${perfil.profissao}.` : "",
+    perfil.sobre ? `O que ele contou sobre si: ${perfil.sobre}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const sistema: Anthropic.Beta.BetaTextBlockParam[] = [
     { type: "text", text: INSTRUCOES },
     // Parte que muda a cada pedido fica por último
     {
       type: "text",
-      text: `Agora é ${agoraPorExtenso()} (horário de Brasília). Hoje é ${hojeSP()} no formato YYYY-MM-DD. Use isso para entender "hoje", "amanhã", "dia 5", "semana que vem".${CIDADE ? ` O usuário mora em ${CIDADE}: use essa cidade quando ele perguntar do clima ou de lugares sem dizer onde.` : ""}\n\n${await situacaoAtual(supabase)}`,
+      text: `Agora é ${agoraPorExtenso()} (horário de Brasília). Hoje é ${hojeSP()} no formato YYYY-MM-DD. Use isso para entender "hoje", "amanhã", "dia 5", "semana que vem".${cidade ? ` O usuário mora em ${cidade}: use essa cidade quando ele perguntar do clima ou de lugares sem dizer onde.` : ""}${sobreUsuario ? `\n\nSobre o usuário (do perfil dele): ${sobreUsuario}` : ""}\n\n${await situacaoAtual(supabase)}`,
     },
   ];
 
@@ -314,13 +356,15 @@ export async function POST(request: Request) {
 
   // Salva tentando do mais completo ao mais simples (se o banco ainda não tiver as colunas novas)
   const tentativas: Record<string, unknown>[] = [
-    { role: "assistant", content: resposta, actions: registro, extras },
-    { role: "assistant", content: resposta, actions: registro },
-    { role: "assistant", content: resposta },
+    { role: "assistant", content: resposta, actions: registro, extras, ...daConversa },
+    { role: "assistant", content: resposta, actions: registro, ...daConversa },
+    { role: "assistant", content: resposta, ...daConversa },
   ];
   for (const linha of tentativas) {
     const { error } = await supabase.from("messages").insert(linha);
     if (!error) break;
   }
-  return NextResponse.json({ resposta: texto, humor, buscas, fontes: listaFontes, salvou });
+  // A conversa sobe para o topo da lista
+  if (conversa) await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversa);
+  return NextResponse.json({ resposta: texto, humor, buscas, fontes: listaFontes, salvou, conversa });
 }

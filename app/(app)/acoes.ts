@@ -146,3 +146,35 @@ export async function esvaziarLixeira(): Promise<Resultado> {
   atualizarTelas();
   return { ok: true };
 }
+
+// ---------------------------------------------------------------------
+// Conversas do chat
+// ---------------------------------------------------------------------
+
+export type ResumoConversa = { id: string; title: string; updated_at: string };
+
+// Lista as conversas, da mais recente para a mais antiga (null = banco sem conversas ainda)
+export async function listarConversas(): Promise<ResumoConversa[] | null> {
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from("conversations")
+    .select("id, title, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(100);
+  return error ? null : data;
+}
+
+// Exclui a conversa e as mensagens dela. Lançamentos e compromissos NÃO são
+// afetados: ficam em outras tabelas, sem ligação com a conversa.
+export async function excluirConversa(id: string): Promise<Resultado> {
+  if (!ID.test(id)) return { ok: false, erro: "Conversa inválida." };
+  try {
+    const supabase = await criarClienteServidor();
+    const { error } = await supabase.from("conversations").delete().eq("id", id);
+    if (error) throw error;
+  } catch (e) {
+    return falha(e);
+  }
+  revalidatePath("/");
+  return { ok: true };
+}

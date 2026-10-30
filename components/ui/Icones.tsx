@@ -59,3 +59,9 @@ export const IconeSetaBaixo = ({ className }: P) => (
 export const IconeRelogio = ({ className }: P) => (
   <svg {...base(className)}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
 );
+export const IconeMenu = ({ className }: P) => (
+  <svg {...base(className)}><path d="M4 7h16M4 12h16M4 17h10" /></svg>
+);
+export const IconeNovaConversa = ({ className }: P) => (
+  <svg {...base(className)}><path d="M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6" /><path d="M8 9h8M8 13h4M18 16v6M15 19h6" /></svg>
+);

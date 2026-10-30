@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import MascoteAnimado from "../MascoteAnimado";
 import { IconeFechar } from "./Icones";
 
@@ -36,8 +37,10 @@ export default function Folha({
     };
   }, [aberta, aoFechar]);
 
-  if (!aberta) return null;
-  return (
+  if (!aberta || typeof document === "undefined") return null;
+  // Desenhada direto no <body>: se ficasse dentro de algo com efeito de vidro
+  // (cabeçalho, cartão), a janela ficaria presa e cortada dentro dele
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal aria-label={titulo}>
       <div
         className="absolute inset-0 animate-surgir bg-black/40 backdrop-blur-[3px]"
@@ -61,7 +64,8 @@ export default function Folha({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
