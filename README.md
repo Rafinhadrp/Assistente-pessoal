@@ -76,17 +76,20 @@ Depois confira as abas **Finanças** e **Agenda**.
 
 ### Falar em vez de digitar (Fase 2)
 
-Funciona como o ditado do app do Claude:
+Funciona como o ditado do app do Claude: **nada é enviado sozinho**.
 
-1. Toque no **microfone** e fale. O texto vai aparecendo no campo. Pode fazer pausas: ele continua ouvindo.
-2. Quando terminar, toque no botão vermelho (■). O texto fica no campo para você conferir ou corrigir.
-3. Toque em **enviar** (a setinha). Nada é enviado sozinho.
+1. Toque no **microfone** e fale. Pode fazer pausas.
+2. Toque no botão vermelho (■) quando terminar. O texto vai para o campo para você conferir ou corrigir.
+3. Toque em **enviar** (a setinha).
 
-- Para desistir do que falou, toque em **Cancelar**.
-- Se tocar em enviar enquanto ainda está ouvindo, ele para e envia o que já está no campo.
-- Para o celular não pedir permissão toda vez, escolha **"Permitir ao usar o app"** ou **"Permitir sempre"**, e não "Só desta vez".
-- Funciona no **Chrome** (Android e PC), no **Edge** e no **Safari** (iPhone). No Firefox não funciona.
-- No iPhone, a **Siri** e o **Ditado** precisam estar ligados em Ajustes.
+Há dois jeitos de transcrever, e o app escolhe sozinho:
+
+- **Deepgram** (se `DEEPGRAM_API_KEY` estiver configurada): enquanto você fala aparece a onda da sua voz; ao parar, o áudio é transcrito no servidor (mais preciso). Para desistir, toque em **Cancelar**.
+- **Ditado do próprio celular** (sem a chave): o texto aparece enquanto você fala.
+
+Dicas:
+- Para o celular não pedir permissão toda vez, escolha **"Permitir ao usar o app"** ou **"Permitir sempre"**.
+- No modo do celular funciona no **Chrome**, **Edge** e **Safari** (no iPhone, a **Siri** e o **Ditado** precisam estar ligados).
 
 ### Atualizar o app
 
