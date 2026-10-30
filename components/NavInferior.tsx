@@ -13,8 +13,8 @@ const abas = [
 export default function NavInferior() {
   const caminho = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 vidro-forte border-t pb-[env(safe-area-inset-bottom)]">
-      <ul className="mx-auto flex max-w-2xl px-2">
+    <nav className="r-navegacao fixed z-30 vidro-forte p-1.5" aria-label="Navegação principal">
+      <ul className="mx-auto flex max-w-2xl gap-1">
         {abas.map(({ href, rotulo, Icone }) => {
           const ativa = href === "/" ? caminho === "/" : caminho.startsWith(href);
           return (
@@ -22,7 +22,7 @@ export default function NavInferior() {
               <Link
                 href={href}
                 aria-current={ativa ? "page" : undefined}
-                className={`group flex flex-col items-center gap-1 py-2 text-[11px] font-semibold transition ${
+                className={`r-navegacao__aba group flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[11px] font-semibold transition ${
                   ativa ? "text-destaque" : "text-suave hover:text-texto"
                 }`}
               >
