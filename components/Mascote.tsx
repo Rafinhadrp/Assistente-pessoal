@@ -20,7 +20,7 @@ export default function Mascote({
       width={largo ? Math.round(tamanho * 1.5) : tamanho}
       height={tamanho}
       draggable={false}
-      className={`select-none [image-rendering:pixelated] ${className}`}
+      className={`select-none [image-rendering:pixelated] drop-shadow-[0_6px_12px_rgba(58,129,232,0.14)] ${className}`}
     />
   );
 }
