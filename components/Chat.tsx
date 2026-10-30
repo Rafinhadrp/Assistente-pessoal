@@ -108,7 +108,7 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
     <div className="flex flex-1 flex-col">
       <div className="flex-1 space-y-4 px-4 pb-6 pt-4">
         {mensagens.length === 0 && (
-          <div className="flex animate-entrar flex-col items-center pt-10 text-center">
+          <div className="r-boas-vindas flex animate-entrar flex-col items-center px-3 pb-8 pt-10 text-center">
             <Mascote humor="acenando" tamanho={128} />
             <h2 className="mt-3 text-2xl font-bold tracking-tight">{saudacao}</h2>
             <p className="mt-1 max-w-xs text-suave">
@@ -173,7 +173,7 @@ export default function Chat({ historico, saudacao }: { historico: MensagemChat[
           if (voz.ouvindo) voz.cancelar();
           enviar(texto);
         }}
-        className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 px-3 pb-3"
+        className="sticky bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-10 px-3 pb-3"
       >
         {voz.erro && (
           <div className="vidro mb-2 flex animate-entrar items-start gap-2 rounded-2xl px-3.5 py-2.5 text-sm">
