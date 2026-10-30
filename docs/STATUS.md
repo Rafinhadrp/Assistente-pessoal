@@ -1,6 +1,6 @@
 # Situação do projeto — Assistente Pessoal
 
-_Atualizado em 30/10/2026._
+_Atualizado em 30/10/2026 (noite)._
 
 Este arquivo responde três perguntas: **o que já está pronto**, **o que está feito mas ainda não foi publicado** e **o que falta fazer**.
 
@@ -19,6 +19,9 @@ Este arquivo responde três perguntas: **o que já está pronto**, **o que está
 | Logo do Assistente | ✅ Mascote + balão de conversa no login e no ícone da tela de início |
 | **Transcrição com Deepgram** | ✅ Código pronto: grava, mostra a onda da voz e transcreve ao tocar no ■ (precisa da chave `DEEPGRAM_API_KEY`) |
 | **Redesign premium** | ✅ Azul-marinho com vidro, navegação flutuante, mascote animado com o pacote novo (acenando, parado, pensando, comemorando, erro, desconfiado, chamando), painel do mascote em Finanças e Agenda, modo claro conferido |
+| **Várias conversas** | ✅ Gaveta de conversas (☰), nova conversa, trocar e excluir (arrastando ou pela lixeira, com confirmação). Excluir conversa **não** apaga nada de Finanças nem da Agenda |
+| **Perfil completo** | ✅ Bolinha com a inicial ou foto na barra de baixo (no computador, com o nome). Abas Perfil / Editar / Conta: foto, nome, nome completo, nascimento, telefone, cidade/estado, profissão, sobre mim, trocar senha e **sair da conta** (com confirmação, longe dos outros botões) |
+| **Vidro estilo Apple** | ✅ Tema único azul-marinho (igual no celular e no computador), vidro bem translúcido com reflexo de luz, barra de abas em cápsula, botões arredondados |
 | **Fase 5 – Busca na internet** | ✅ A IA pesquisa quando precisa de informação atual (clima, notícias, lojas, preços). Embaixo de cada resposta: **🌐 pesquisou na internet** (teve custo extra; toque para ver as fontes) ou **✓ sem busca** (sem custo extra). No máximo 3 buscas por resposta |
 
 ---
@@ -67,6 +70,7 @@ Já foi enviado para o GitHub/Vercel. **Para funcionar, rode o `supabase/schema.
   - a coluna que guarda as buscas e as fontes de cada resposta (o selo 🌐 / ✓ continua aparecendo depois que você recarrega).
 - [ ] **(Opcional) Colocar sua cidade** na Vercel: **Settings → Environment Variables**, variável `CIDADE` (ex: `Campinas`), e depois **Redeploy**. Assim "como está o clima hoje?" já sabe onde você está.
 - [ ] **Se nunca aparecer 🌐:** a busca na internet pode estar desligada na sua conta da Anthropic. Em console.anthropic.com, procure nas configurações da organização a opção de **web search** e ligue. Enquanto estiver desligada, o app continua funcionando normalmente, só que sem buscar.
+- [ ] **Rodar o `supabase/atualizacao.sql` de novo** (SQL Editor → New query → colar → Run). Ele cria as conversas (suas mensagens antigas viram a "Primeira conversa") e o perfil. Sem isso o chat funciona como antes, mas sem a lista de conversas e sem salvar o perfil.
 - [ ] **Ligar o Deepgram:** crie conta em deepgram.com, gere uma **API Key** e coloque na Vercel em **Settings → Environment Variables** como `DEEPGRAM_API_KEY`. Depois faça **Redeploy**. Teste o microfone: deve aparecer a onda da voz e "Gravando · 0:03".
 - [ ] **Desligar novos cadastros** no Supabase depois de criar sua conta: **Authentication → Sign In / Providers → "Allow new users to sign up"** desligado.
 - [ ] **Testar o microfone no seu celular** várias vezes seguidas, sem recarregar. Se falhar, me diga o modelo do celular e se usa o app instalado ou o navegador.
@@ -88,7 +92,9 @@ app/(app)/page.tsx           Chat (tela principal)
 app/(app)/financas/          Finanças
 app/(app)/agenda/            Agenda (Próximos / Histórico)
 app/(app)/lixeira/           Lixeira (30 dias)
-app/(app)/acoes.ts           Editar, lixeira, restaurar
+app/(app)/acoes.ts           Editar, lixeira, restaurar, listar/excluir conversas
+app/(app)/perfil/            Perfil (foto, dados, senha, sair)
+components/ListaConversas.tsx Gaveta de conversas
 app/api/chat/route.ts        Conversa com a IA (ferramentas, mascote, histórico de ações)
 lib/ferramentas.ts           O que a IA consegue fazer no banco
 components/                  Peças das telas (chat, listas, mascote, logo, vidro)

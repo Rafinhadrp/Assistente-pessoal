@@ -93,28 +93,31 @@ export default async function PaginaFinancas({
             className="absolute -right-16 -top-20 h-56 w-56 rounded-full opacity-50 blur-3xl"
             style={{ background: "var(--mancha-1)" }}
           />
-          {/* Mascote contextual no canto, sem cobrir os valores */}
-          <div className="absolute right-3 top-3 flex items-start gap-1">
-            <span
-              className={`vidro-forte mt-1 max-w-[8.5rem] rounded-2xl rounded-tr-md border px-2.5 py-1.5 text-[11px] font-medium leading-tight ${comentario.tom}`}
-            >
-              {comentario.texto}
-            </span>
+          {/* Saldo à esquerda e mascote à direita, lado a lado (nunca se sobrepõem) */}
+          <div className="relative flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-suave">Saldo atual</p>
+              <p
+                className={`numeros mt-1 whitespace-nowrap text-[clamp(1.75rem,8.5vw,2.5rem)] font-bold leading-none tracking-tight ${
+                  saldoAtual < 0 ? "text-gasto" : ""
+                }`}
+              >
+                {formatarReais(saldoAtual)}
+              </p>
+            </div>
             {saldoAtual < 0 ? (
-              <Mascote humor="chorando" tamanho={54} />
+              <Mascote humor="chorando" tamanho={58} className="shrink-0" />
             ) : (
-              <MascoteAnimado animacao="parado" tamanho={56} rotulo="Mascote" />
+              <MascoteAnimado animacao="parado" tamanho={58} rotulo="Mascote" />
             )}
           </div>
+          {/* Comentário do mascote, embaixo do valor, com a "pontinha" para ele */}
+          <p
+            className={`vidro-forte relative mt-3 inline-block rounded-2xl rounded-tr-md border px-3 py-1.5 text-xs font-medium ${comentario.tom}`}
+          >
+            {comentario.texto}
+          </p>
           <div className="relative">
-            <p className="text-sm font-medium text-suave">Saldo atual</p>
-            <p
-              className={`numeros mt-1 text-[2.5rem] font-bold leading-none tracking-tight ${
-                saldoAtual < 0 ? "text-gasto" : ""
-              }`}
-            >
-              {formatarReais(saldoAtual)}
-            </p>
             <div className="mt-5 grid grid-cols-2 gap-2.5">
               <div className="rounded-2xl bg-receita-suave p-3">
                 <p className="flex items-center gap-1 text-xs font-medium text-receita">

@@ -1,72 +1,41 @@
 @import "tailwindcss";
 
 /* =====================================================================
-   Identidade visual do Assistente: vidro suave e orgânico
-   - Fundo com manchas de cor bem difusas que se mexem devagar
-   - Superfícies de vidro discretas (translúcidas, com desfoque leve)
-   - Grão sutil por cima de tudo, para não parecer "plástico"
-   Paleta derivada do mascote <R/>: azul #58a6ff, branco #e6edf3, #0d1117
-   Os nomes abaixo viram classes do Tailwind: bg-fundo, text-suave, etc.
+   Identidade visual do Assistente: vidro estilo Apple ("Liquid Glass")
+   - Um tema só (azul-marinho), igual no celular e no computador
+   - Superfícies bem translúcidas, desfoque forte e cores do fundo vivas
+   - Reflexo de luz na borda de cima e brilho sutil nas bordas
+   - Grão leve por cima, para não parecer "plástico"
+   Paleta derivada do mascote <R/>. Os nomes abaixo viram classes do
+   Tailwind: bg-fundo, text-suave, etc.
    ===================================================================== */
 :root {
-  --fundo: #eef2f6;
-  --superficie: rgb(255 255 255 / 0.6);
-  --superficie-forte: rgb(255 255 255 / 0.88);
-  --superficie-2: rgb(15 23 42 / 0.05);
-  --borda: rgb(15 23 42 / 0.09);
-  --brilho: rgb(255 255 255 / 0.75);
-  --reflexo: rgb(255 255 255 / 0.3);
-  --sombra: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 30px -14px rgb(15 23 42 / 0.18);
-  --texto: #1c2430;
-  --suave: #5b6675;
-  --destaque: #0a66d1;
-  --destaque-suave: rgb(10 102 209 / 0.1);
-  --botao: #1d6fdc;
-  --botao-hover: #185fc0;
-  --receita: #19803a;
-  --receita-suave: rgb(25 128 58 / 0.1);
-  --gasto: #c9343c;
-  --gasto-suave: rgb(201 52 60 / 0.1);
-  --perigo: #c9343c;
-  --aviso: #94680a;
-  --aviso-suave: rgb(212 160 23 / 0.14);
-  --mancha-1: #a9d0ff;
-  --mancha-2: #ffdcc2;
-  --mancha-3: #dccfff;
-  --grao: 0.05;
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Azul-marinho profundo da identidade R */
-    --fundo: #091225;
-    --superficie: rgb(26 44 79 / 0.55);
-    --superficie-forte: rgb(14 28 54 / 0.86);
-    --superficie-2: rgb(140 181 244 / 0.075);
-    --borda: rgb(151 188 245 / 0.16);
-    --brilho: rgb(232 242 255 / 0.12);
-    --reflexo: rgb(255 255 255 / 0.055);
-    --sombra: 0 14px 36px -20px rgb(0 8 25 / 0.75);
-    --texto: #edf3ff;
-    --suave: #a6b9d6;
-    --destaque: #83baff;
-    --destaque-suave: rgb(84 146 244 / 0.17);
-    --botao: #3475e8;
-    --botao-hover: #4386f5;
-    --receita: #5fd38a;
-    --receita-suave: rgb(95 211 138 / 0.13);
-    --gasto: #ff7b86;
-    --gasto-suave: rgb(255 123 134 / 0.13);
-    --perigo: #d93a49;
-    --aviso: #f0c062;
-    --aviso-suave: rgb(240 192 98 / 0.13);
-    --mancha-1: #214b91;
-    --mancha-2: #263a76;
-    --mancha-3: #124268;
-    --grao: 0.035;
-    color-scheme: dark;
-  }
+  --fundo: #071022;
+  --superficie: rgb(255 255 255 / 0.075);
+  --superficie-forte: rgb(16 28 54 / 0.62);
+  --superficie-2: rgb(255 255 255 / 0.065);
+  --borda: rgb(255 255 255 / 0.14);
+  --brilho: rgb(255 255 255 / 0.3);
+  --reflexo: rgb(255 255 255 / 0.1);
+  --sombra: 0 12px 40px -14px rgb(0 0 0 / 0.5);
+  --texto: #f2f6ff;
+  --suave: #a9b8d3;
+  --destaque: #8cc2ff;
+  --destaque-suave: rgb(120 175 255 / 0.16);
+  --botao: #3478f6;
+  --botao-hover: #4a88f8;
+  --receita: #5fd38a;
+  --receita-suave: rgb(95 211 138 / 0.14);
+  --gasto: #ff7b86;
+  --gasto-suave: rgb(255 123 134 / 0.14);
+  --perigo: #e5484d;
+  --aviso: #f0c062;
+  --aviso-suave: rgb(240 192 98 / 0.14);
+  --mancha-1: #2456c4;
+  --mancha-2: #4a31a3;
+  --mancha-3: #0e6378;
+  --grao: 0.035;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -161,33 +130,38 @@ body {
 /* ---------------------------------------------------------------------
    Peças reutilizáveis
    --------------------------------------------------------------------- */
-/* Vidro: translúcido, desfoque leve, borda fina e um brilho no topo */
+/* Vidro estilo Apple: bem translúcido, desfoque forte, reflexo no topo e brilho nas bordas */
 @utility vidro {
   background-color: var(--superficie);
-  background-image: linear-gradient(145deg, var(--reflexo), transparent 60%);
-  -webkit-backdrop-filter: blur(22px) saturate(125%);
-  backdrop-filter: blur(22px) saturate(125%);
+  background-image: linear-gradient(180deg, var(--reflexo) 0%, rgb(255 255 255 / 0.025) 40%, transparent 75%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid var(--borda);
-  box-shadow: inset 0 1px 0 var(--brilho), var(--sombra);
+  box-shadow:
+    inset 0 1px 0 var(--brilho),
+    inset 0 -1px 0 rgb(255 255 255 / 0.04),
+    var(--sombra);
 }
 
-/* Vidro mais opaco: cabeçalho, barra de navegação e janelas */
+/* Vidro mais encorpado: cabeçalho, barra de navegação e janelas */
 @utility vidro-forte {
   background-color: var(--superficie-forte);
-  background-image: linear-gradient(145deg, var(--reflexo), transparent 65%);
-  -webkit-backdrop-filter: blur(22px) saturate(125%);
-  backdrop-filter: blur(22px) saturate(125%);
+  background-image: linear-gradient(180deg, var(--reflexo) 0%, transparent 55%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%);
+  backdrop-filter: blur(36px) saturate(190%);
   border-color: var(--borda);
-  box-shadow: inset 0 1px 0 var(--brilho), 0 10px 28px -21px rgb(0 0 0 / 0.55);
+  box-shadow:
+    inset 0 1px 0 var(--brilho),
+    0 14px 40px -18px rgb(0 0 0 / 0.6);
 }
 
 @layer components {
   .cartao {
-    @apply vidro rounded-[25px] transition-[border-color] duration-200;
+    @apply vidro rounded-[28px] transition-[border-color] duration-200;
   }
   @media (hover: hover) {
     .cartao:hover {
-      border-color: color-mix(in srgb, var(--destaque) 26%, var(--borda));
+      border-color: rgb(255 255 255 / 0.24);
     }
   }
   .campo {
@@ -197,13 +171,13 @@ body {
     @apply mb-1.5 block text-[13px] font-medium text-suave;
   }
   .botao-primario {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-botao px-4 py-3 font-semibold text-white shadow-[0_6px_20px_-8px_var(--botao)] transition hover:bg-botao-hover active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-botao px-4 py-3 font-semibold text-white shadow-[0_6px_20px_-8px_var(--botao)] transition hover:bg-botao-hover active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
   }
   .botao-secundario {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-borda bg-superficie-2 px-4 py-3 font-semibold text-texto transition hover:bg-superficie active:scale-[0.98] disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-borda bg-superficie-2 px-4 py-3 font-semibold text-texto transition hover:bg-superficie active:scale-[0.98] disabled:opacity-50;
   }
   .botao-perigo {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--perigo)] px-4 py-3 font-semibold text-white shadow-[0_6px_20px_-10px_var(--perigo)] transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-[var(--perigo)] px-4 py-3 font-semibold text-white shadow-[0_6px_20px_-10px_var(--perigo)] transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50;
   }
   .chip {
     @apply inline-flex shrink-0 items-center gap-1.5 rounded-full border border-borda bg-superficie px-3.5 py-1.5 text-sm font-medium text-suave backdrop-blur-md transition hover:text-texto;
@@ -218,18 +192,18 @@ body {
     right: max(12px, env(safe-area-inset-right));
     bottom: calc(10px + env(safe-area-inset-bottom));
     border: 1px solid var(--borda);
-    border-radius: 24px;
-    box-shadow: inset 0 1px 0 var(--brilho), 0 12px 34px -17px rgb(0 0 0 / 0.55);
+    border-radius: 32px;
+    /* No computador, a barra fica com a largura do conteúdo, centralizada */
+    max-width: 40rem;
+    margin-inline: auto;
   }
   .r-navegacao__aba {
-    border: 1px solid transparent;
-    border-radius: 18px;
-    min-height: 55px;
+    border-radius: 26px;
+    min-height: 54px;
   }
   .r-navegacao__aba[aria-current="page"] {
-    border-color: color-mix(in srgb, var(--destaque) 25%, transparent);
-    background: linear-gradient(145deg, rgb(72 139 246 / 0.22), rgb(72 139 246 / 0.055));
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+    background: rgb(255 255 255 / 0.13);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18);
   }
 
   /* Abas (ex: Próximos / Histórico): mesmo destaque azul da navegação */
@@ -237,10 +211,9 @@ body {
     @apply flex-1 rounded-xl border border-transparent py-2 text-center text-sm font-semibold text-suave transition hover:text-texto;
   }
   .aba-ativa {
-    @apply text-destaque;
-    border-color: color-mix(in srgb, var(--destaque) 25%, transparent);
-    background: linear-gradient(145deg, rgb(72 139 246 / 0.22), rgb(72 139 246 / 0.055));
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+    @apply text-texto;
+    background: rgb(255 255 255 / 0.14);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 2px 10px -4px rgb(0 0 0 / 0.4);
   }
 
   /* Halo suave atrás do mascote na tela de boas-vindas */
@@ -248,6 +221,12 @@ body {
     background: radial-gradient(ellipse at 50% 35%, rgb(69 127 237 / 0.16), transparent 68%);
     border-radius: 30px;
   }
+}
+
+/* Gaveta lateral (lista de conversas) */
+@keyframes deslizar {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
 /* Mascote animado: desliza a tira de quadros (ver components/MascoteAnimado.tsx) */
