@@ -11,7 +11,7 @@ export default function Cabecalho({
   acoes?: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-20 vidro-forte border-b px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] ">
+    <header className="sticky top-0 z-20 vidro-forte border-b px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] shadow-[0_9px_24px_-20px_rgba(35,101,202,0.4)]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
           {icone}
